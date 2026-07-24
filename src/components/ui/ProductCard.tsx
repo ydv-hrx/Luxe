@@ -7,6 +7,7 @@ import { Product } from '@/types';
 import { PriceDisplay } from './PriceDisplay';
 import { Badge } from './Badge';
 import { useCartStore } from '@/store/useCartStore';
+import { useWishlistStore } from '@/store/useWishlistStore';
 import { ShoppingBag, Heart } from 'lucide-react';
 
 export interface ProductCardProps {
@@ -19,6 +20,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   aspectRatio = 'portrait',
 }) => {
   const addItem = useCartStore((state) => state.addItem);
+  const { toggleWishlist, isInWishlist } = useWishlistStore();
+  const wishlisted = isInWishlist(product.id);
   const primaryImage = product.images[0] || {
     url: 'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&w=800&q=80',
     altText: product.title,
@@ -63,16 +66,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         </div>
 
         {/* Quick Actions Hover Overlay */}
-        <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+        <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-100 z-10">
           <button
             type="button"
-            className="p-2.5 rounded-full bg-white/90 text-neutral-800 backdrop-blur-md shadow-md hover:bg-black hover:text-white transition-colors"
-            aria-label="Save to Wishlist"
+            className={`p-2.5 rounded-full backdrop-blur-md shadow-md transition-colors ${
+              wishlisted
+                ? 'bg-red-50 text-red-600 border border-red-200'
+                : 'bg-white/90 text-neutral-800 hover:bg-black hover:text-white'
+            }`}
+            aria-label={wishlisted ? 'Remove from Wishlist' : 'Save to Wishlist'}
             onClick={(e) => {
               e.preventDefault();
+              e.stopPropagation();
+              toggleWishlist(product);
             }}
           >
-            <Heart className="w-4 h-4" />
+            <Heart className={`w-4 h-4 ${wishlisted ? 'fill-red-600 text-red-600' : ''}`} />
           </button>
         </div>
 

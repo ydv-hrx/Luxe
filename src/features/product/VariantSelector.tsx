@@ -5,6 +5,7 @@ import { Product, ProductVariant } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { useCartStore } from '@/store/useCartStore';
 import { useCompareStore } from '@/store/useCompareStore';
+import { useWishlistStore } from '@/store/useWishlistStore';
 import { ShoppingBag, Heart, Scale, Check, ShieldCheck } from 'lucide-react';
 
 export interface VariantSelectorProps {
@@ -24,6 +25,8 @@ export const VariantSelector: React.FC<VariantSelectorProps> = ({ product }) => 
 
   const addItem = useCartStore((state) => state.addItem);
   const { addProduct, isComparing } = useCompareStore();
+  const { toggleWishlist, isInWishlist } = useWishlistStore();
+  const wishlisted = isInWishlist(product.id);
 
   const activeVariant: ProductVariant =
     product.variants.find((v) =>
@@ -127,6 +130,17 @@ export const VariantSelector: React.FC<VariantSelectorProps> = ({ product }) => 
         >
           <ShoppingBag className="w-4 h-4" />
           Add To Bag — ${(activeVariant.price.amount).toFixed(0)}
+        </Button>
+
+        <Button
+          variant="outline"
+          size="lg"
+          onClick={() => toggleWishlist(product)}
+          className={`gap-2 ${wishlisted ? 'border-red-600 text-red-600 bg-red-50' : ''}`}
+          aria-label={wishlisted ? 'Remove from Wishlist' : 'Save to Wishlist'}
+        >
+          <Heart className={`w-4 h-4 ${wishlisted ? 'fill-red-600 text-red-600' : ''}`} />
+          {wishlisted ? 'Saved' : 'Wishlist'}
         </Button>
 
         <Button

@@ -89,3 +89,28 @@ export interface CompareState {
   items: Product[];
   isOpen: boolean;
 }
+
+export interface ProductReview {
+  id: string;
+  productId: string;
+  author: string;
+  rating: number;
+  title: string;
+  body: string;
+  date: string;
+  isVerified: boolean;
+  helpfulCount: number;
+  images?: string[];
+}
+
+export interface ReviewSummary {
+  averageRating: number;
+  totalReviews: number;
+  ratingBreakdown: {
+    5: number;
+    4: number;
+    3: number;
+    2: number;
+    1: number;
+  };
+}

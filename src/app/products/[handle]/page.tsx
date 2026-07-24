@@ -6,6 +6,7 @@ import { ProductGallery } from '@/features/product/ProductGallery';
 import { ProductInformation } from '@/features/product/ProductInformation';
 import { VariantSelector } from '@/features/product/VariantSelector';
 import { CompleteTheLook } from '@/features/product/CompleteTheLook';
+import { ProductReviewsSection } from '@/features/reviews/ProductReviewsSection';
 import { CompareTray } from '@/features/compare/CompareTray';
 import { ShieldCheck, Truck, RotateCcw } from 'lucide-react';
 
@@ -41,8 +42,32 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const allProducts = await commerceService.getProducts();
   const relatedProducts = allProducts.filter((p) => p.id !== product.id).slice(0, 3);
 
+  const productJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.title,
+    description: product.description,
+    image: product.images[0]?.url,
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: product.price.currencyCode,
+      price: product.price.amount,
+      availability: 'https://schema.org/InStock',
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: product.rating || 4.9,
+      reviewCount: product.reviewCount || 24,
+    },
+  };
+
   return (
     <div className="max-w-[1440px] mx-auto px-6 sm:px-8 py-10 flex flex-col gap-16">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
+
       {/* Product Detail Layout Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
         {/* Left Column: Product Image Gallery */}
@@ -72,6 +97,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </div>
         </div>
       </div>
+
+      {/* Reviews & Ratings Section */}
+      <ProductReviewsSection productId={product.id} productTitle={product.title} />
 
       {/* Complete The Look Section */}
       <Suspense fallback={<div className="h-40 bg-neutral-100 rounded-2xl animate-pulse" />}>

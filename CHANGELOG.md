@@ -1,5 +1,21 @@
 # LUXE Commerce Suite — Changelog
 
+## [Phase 11] - 2026-07-25
+### Added
+- Implemented `ProductReview` & `ReviewSummary` models (`src/types/index.ts`).
+- Created `reviewService` (`src/lib/services/review.ts`) for review retrieval, star breakdown calculations, sorting (`newest`, `oldest`, `highest`, `lowest`), photo filtering, and duplicate-preventing helpful voting.
+- Created `ReviewCard.tsx` (`src/features/reviews/ReviewCard.tsx`) rendering star ratings, verified client badge, photo grid, and helpful action handler.
+- Created `ProductReviewsSection.tsx` (`src/features/reviews/ProductReviewsSection.tsx`) rendering rating summary breakdown bars, sorting/filtering controls, and collapsible review submission form.
+- Added Schema.org `AggregateRating` JSON-LD structured data to PDPs (`src/app/products/[handle]/page.tsx`).
+
+## [Phase 10] - 2026-07-25
+### Added
+- Implemented `useWishlistStore` Zustand store (`src/store/useWishlistStore.ts`) with `localStorage` persistence under key `luxe_wishlist_items`.
+- Integrated wishlist heart icon toggles on catalog `ProductCard.tsx` and PDP `VariantSelector.tsx`.
+- Created dynamic `/wishlist` route and `WishlistClient.tsx` featuring saved item grid, empty state management, and clear controls.
+- Added live wishlist badge item counter to `TopNavBar.tsx`.
+- Added global animated `WishlistToast.tsx` feedback notifications.
+
 ## [Direct Shopify Checkout] - 2026-07-24
 ### Changed
 - Refactored checkout flow to eliminate duplicate address and delivery input steps.

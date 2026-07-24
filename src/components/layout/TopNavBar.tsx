@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useCartStore } from '@/store/useCartStore';
+import { useWishlistStore } from '@/store/useWishlistStore';
 import { SearchHub } from '@/features/search/SearchHub';
-import { ShoppingBag, Search, User, Menu, X, Sparkles } from 'lucide-react';
+import { ShoppingBag, Search, User, Menu, X, Sparkles, Heart } from 'lucide-react';
 
 export const TopNavBar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -15,15 +16,19 @@ export const TopNavBar: React.FC = () => {
   const initCart = useCartStore((state) => state.initCart);
   const totalItems = useCartStore((state) => state.getTotalItems());
 
+  const initWishlist = useWishlistStore((state) => state.initWishlist);
+  const totalWishlistItems = useWishlistStore((state) => state.getTotalItems());
+
   useEffect(() => {
     initCart();
+    initWishlist();
 
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [initCart]);
+  }, [initCart, initWishlist]);
 
   return (
     <>
@@ -84,6 +89,20 @@ export const TopNavBar: React.FC = () => {
             >
               <Search className="w-5 h-5" />
             </button>
+
+            {/* Wishlist Link & Counter */}
+            <Link
+              href="/wishlist"
+              className="p-2 text-neutral-700 hover:text-red-600 transition-colors relative rounded-full hover:bg-neutral-100/60"
+              aria-label={`View wishlist containing ${totalWishlistItems} saved items`}
+            >
+              <Heart className={`w-5 h-5 ${totalWishlistItems > 0 ? 'text-red-600 fill-red-600' : ''}`} />
+              {totalWishlistItems > 0 && (
+                <span className="absolute top-1 right-1 bg-red-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                  {totalWishlistItems}
+                </span>
+              )}
+            </Link>
 
             <Link
               href="/account"

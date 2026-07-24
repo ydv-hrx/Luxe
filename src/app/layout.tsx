@@ -4,6 +4,7 @@ import './globals.css';
 import { TopNavBar } from '@/components/layout/TopNavBar';
 import { Footer } from '@/components/layout/Footer';
 import { CartDrawer } from '@/components/layout/CartDrawer';
+import { WishlistToast } from '@/components/ui/WishlistToast';
 
 const geist = Geist({
   variable: '--font-geist-sans',
@@ -79,6 +80,7 @@ export default function RootLayout({
         <main className="flex-grow pt-20">{children}</main>
         <Footer />
         <CartDrawer />
+        <WishlistToast />
       </body>
     </html>
   );
