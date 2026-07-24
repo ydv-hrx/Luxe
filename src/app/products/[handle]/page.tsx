@@ -5,6 +5,7 @@ import { commerceService } from '@/lib/services/commerce';
 import { ProductGallery } from '@/features/product/ProductGallery';
 import { ProductInformation } from '@/features/product/ProductInformation';
 import { VariantSelector } from '@/features/product/VariantSelector';
+import { ProductStoryAccordions } from '@/features/product/ProductStoryAccordions';
 import { CompleteTheLook } from '@/features/product/CompleteTheLook';
 import { ProductReviewsSection } from '@/features/reviews/ProductReviewsSection';
 import { CompareTray } from '@/features/compare/CompareTray';
@@ -62,26 +63,27 @@ export default async function ProductPage({ params }: ProductPageProps) {
   };
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 sm:px-8 py-10 flex flex-col gap-16">
+    <div className="max-w-[1440px] mx-auto px-6 sm:px-8 py-10 sm:py-12 flex flex-col gap-16">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
       />
 
-      {/* Product Detail Layout Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-        {/* Left Column: Product Image Gallery */}
-        <div className="lg:col-span-7">
+      {/* 55% / 45% Desktop Split Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+        {/* Left Column (55%): Gallery & Craftsmanship Accordions */}
+        <div className="lg:col-span-7 flex flex-col gap-12">
           <ProductGallery images={product.images} title={product.title} />
+          <ProductStoryAccordions />
         </div>
 
-        {/* Right Column: Information & Variant Selector */}
+        {/* Right Column (45%): Sticky Purchase Panel */}
         <div className="lg:col-span-5 flex flex-col gap-8 sticky top-28">
           <ProductInformation product={product} />
           <VariantSelector product={product} />
 
           {/* Value Props Strip */}
-          <div className="grid grid-cols-3 gap-2 text-center text-[11px] font-medium text-neutral-600 pt-4 border-t border-neutral-200/80">
+          <div className="grid grid-cols-3 gap-2 text-center text-[11px] font-semibold text-neutral-600 pt-4 border-t border-neutral-200/80">
             <div className="flex flex-col items-center gap-1">
               <Truck className="w-4 h-4 text-blue-600" />
               <span>Express Delivery</span>
@@ -99,9 +101,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
       </div>
 
       {/* Reviews & Ratings Section */}
-      <ProductReviewsSection productId={product.id} productTitle={product.title} />
+      <div id="reviews">
+        <ProductReviewsSection productId={product.id} productTitle={product.title} />
+      </div>
 
-      {/* Complete The Look Section */}
+      {/* Complete The Look / Related Products Section */}
       <Suspense fallback={<div className="h-40 bg-neutral-100 rounded-2xl animate-pulse" />}>
         <CompleteTheLook relatedProducts={relatedProducts} />
       </Suspense>

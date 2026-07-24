@@ -2,12 +2,12 @@ import React from 'react';
 import { Metadata } from 'next';
 import { commerceService } from '@/lib/services/commerce';
 import { ShopCatalogClient } from '@/features/catalog/ShopCatalogClient';
-import { Badge } from '@/components/ui/Badge';
+import { CollectionHero } from '@/features/catalog/CollectionHero';
 import { FilterState } from '@/types';
 
 export const metadata: Metadata = {
-  title: 'Shop All Garments & Accessories | LUXE Catalog',
-  description: 'Browse the complete LUXE collection of architectural outerwear, Grade-A cashmere knits, and silk gala dresses.',
+  title: 'The Signature Collection | LUXE Catalog',
+  description: 'Discover meticulously crafted cashmere, refined outerwear, and timeless essentials designed for modern living.',
 };
 
 interface ShopPageProps {
@@ -33,19 +33,13 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
   });
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 sm:px-8 py-10 flex flex-col gap-10">
-      {/* Header Banner */}
-      <div className="flex flex-col gap-3 pb-8 border-b border-neutral-200">
-        <Badge variant="outline" className="w-fit">
-          Collection Catalog
-        </Badge>
-        <h1 className="text-4xl sm:text-5xl font-semibold font-serif text-neutral-900">
-          Shop All Pieces
-        </h1>
-        <p className="text-sm text-neutral-600 max-w-xl">
-          Discover architectural outerwear, Grade-A Mongolian cashmere knits, and hand-finished leather goods.
-        </p>
-      </div>
+    <div className="max-w-[1440px] mx-auto px-6 sm:px-8 py-10 flex flex-col gap-12">
+      {/* Luxury Editorial Collection Hero */}
+      <CollectionHero
+        badge="CURATED COLLECTION"
+        title="The Signature Collection"
+        subtitle="Discover meticulously crafted cashmere, refined outerwear, and timeless essentials designed for modern living."
+      />
 
       {/* Interactive Catalog Client */}
       <ShopCatalogClient initialProducts={products} currentCategory={category} />

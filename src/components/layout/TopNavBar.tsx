@@ -112,11 +112,25 @@ export const TopNavBar: React.FC = () => {
               <User className="w-5 h-5" />
             </Link>
 
-            {/* Cart Icon & Counter */}
+            {/* Desktop Cart Link */}
+            <Link
+              href="/cart"
+              className="hidden lg:flex p-2 text-neutral-900 hover:text-blue-600 transition-colors relative rounded-full hover:bg-neutral-100/60 focus:outline-none"
+              aria-label={`Shopping bag containing ${totalItems} items`}
+            >
+              <ShoppingBag className="w-5 h-5" />
+              {totalItems > 0 && (
+                <span className="absolute top-1 right-1 bg-black text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
+                  {totalItems}
+                </span>
+              )}
+            </Link>
+
+            {/* Mobile / Tablet Cart Drawer Trigger */}
             <button
               type="button"
               onClick={toggleCart}
-              className="p-2 text-neutral-900 hover:text-blue-600 transition-colors relative rounded-full hover:bg-neutral-100/60 focus:outline-none"
+              className="lg:hidden p-2 text-neutral-900 hover:text-blue-600 transition-colors relative rounded-full hover:bg-neutral-100/60 focus:outline-none"
               aria-label={`Shopping bag containing ${totalItems} items`}
             >
               <ShoppingBag className="w-5 h-5" />

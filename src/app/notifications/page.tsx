@@ -5,6 +5,8 @@ import { notificationService } from '@/lib/services/notification';
 import { Badge } from '@/components/ui/Badge';
 import { Bell, ShieldCheck, ExternalLink, CheckCircle } from 'lucide-react';
 
+import { PageHeader } from '@/components/ui/PageHeader';
+
 export const metadata: Metadata = {
   title: 'Notification Center | LUXE Account',
   description: 'View order delivery tracking alerts, security notices, and Diamond points updates.',
@@ -14,18 +16,12 @@ export default async function NotificationsPage() {
   const notifications = await notificationService.getNotifications();
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 sm:px-8 py-10 flex flex-col gap-10">
-      <div className="flex flex-col gap-3 pb-8 border-b border-neutral-200">
-        <Badge variant="outline" className="w-fit">
-          Client Messaging
-        </Badge>
-        <h1 className="text-4xl sm:text-5xl font-semibold font-serif text-neutral-900">
-          Notification Center
-        </h1>
-        <p className="text-sm text-neutral-600">
-          Stay informed with real-time dispatch tracking, security alerts, and capsule release previews.
-        </p>
-      </div>
+    <div className="max-w-[1440px] mx-auto px-6 sm:px-8 py-10 sm:py-12 flex flex-col gap-10">
+      <PageHeader
+        badge="Client Messaging"
+        title="Notification Center"
+        subtitle="Stay informed with real-time dispatch tracking, security alerts, and capsule release previews."
+      />
 
       <div className="max-w-3xl mx-auto w-full flex flex-col gap-4">
         {notifications.length === 0 ? (
