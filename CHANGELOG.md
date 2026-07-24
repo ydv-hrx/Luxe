@@ -1,5 +1,12 @@
 # LUXE Commerce Suite — Changelog
 
+## [Checkout Refactoring] - 2026-07-24
+### Changed
+- Removed redundant `PaymentSection` component and local credit card input state from `CheckoutClient.tsx`.
+- Updated multi-step checkout flow to 3 clean steps: **Shipping Address** → **Delivery Method** → **Review & Continue**.
+- Renamed checkout action button to **"Continue to Secure Shopify Checkout"**.
+- Standardized direct external URL redirection (`window.location.href = result.checkoutUrl`) so customers enter payment details strictly once on Shopify's PCI-compliant checkout.
+
 ## [Phase 9] - 2026-07-24
 ### Added
 - Implemented `CartBuyerIdentityUpdate` mutation (`BUYER_IDENTITY_UPDATE_MUTATION`) in `ShopifyCartService` (`src/lib/services/cart.ts`) to attach shipping address and buyer email to the active Shopify cart.

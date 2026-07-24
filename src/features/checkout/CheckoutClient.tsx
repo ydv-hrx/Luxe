@@ -6,10 +6,9 @@ import { useCartStore } from '@/store/useCartStore';
 import { cartService, Address } from '@/lib/services/cart';
 import { AddressForm } from './AddressForm';
 import { ShippingSelector, ShippingMethod } from './ShippingSelector';
-import { PaymentSection } from './PaymentSection';
 import { OrderSummary } from './OrderSummary';
 import { Button } from '@/components/ui/Button';
-import { ShieldCheck, ArrowRight, ArrowLeft, Check, Lock } from 'lucide-react';
+import { ShieldCheck, ArrowRight, ArrowLeft, Lock, MapPin, Truck } from 'lucide-react';
 
 export const CheckoutClient: React.FC = () => {
   const router = useRouter();
@@ -17,7 +16,6 @@ export const CheckoutClient: React.FC = () => {
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('credit-card');
 
   const [address, setAddress] = useState<Address>({
     firstName: '',
@@ -78,7 +76,7 @@ export const CheckoutClient: React.FC = () => {
         items.map((i) => ({ merchandiseId: i.variant.id, quantity: i.quantity }))
       );
 
-      const result = await cartService.checkout(cart.id, address, paymentMethod);
+      const result = await cartService.checkout(cart.id, address);
       clearCart();
 
       if (result.checkoutUrl.startsWith('http')) {
@@ -131,7 +129,7 @@ export const CheckoutClient: React.FC = () => {
             <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] ${step >= 3 ? 'bg-black text-white' : 'bg-neutral-200'}`}>
               3
             </span>
-            <span>Payment</span>
+            <span>Review & Continue</span>
           </div>
         </div>
 
@@ -167,23 +165,52 @@ export const CheckoutClient: React.FC = () => {
                 Back
               </Button>
               <Button variant="primary" size="lg" fullWidth onClick={handleNextStep} className="gap-2">
-                Continue to Payment
+                Continue to Review
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </div>
           </div>
         )}
 
-        {/* Step 3: Payment */}
+        {/* Step 3: Review & Continue */}
         {step === 3 && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-bold font-serif text-neutral-900">3. Secure Payment</h2>
-              <button type="button" onClick={() => setStep(2)} className="text-xs text-blue-600 underline font-medium">
-                Edit Delivery
-              </button>
+              <h2 className="text-xl font-bold font-serif text-neutral-900">3. Review Order & Continue to Checkout</h2>
             </div>
-            <PaymentSection method={paymentMethod} onMethodChange={(m) => setPaymentMethod(m)} />
+
+            {/* Address & Delivery Summary Card */}
+            <div className="p-6 bg-neutral-50 rounded-2xl border border-neutral-200/80 flex flex-col gap-4 text-xs">
+              <div className="flex justify-between items-start border-b border-neutral-200 pb-3">
+                <div className="flex gap-2 items-center text-neutral-900 font-bold text-sm">
+                  <MapPin className="w-4 h-4 text-blue-600" />
+                  <span>Shipping Address</span>
+                </div>
+                <button type="button" onClick={() => setStep(1)} className="text-xs text-blue-600 underline font-medium">
+                  Edit
+                </button>
+              </div>
+              <p className="text-neutral-700 leading-relaxed">
+                <span className="font-semibold text-neutral-900">{address.firstName} {address.lastName}</span><br />
+                {address.address1} {address.address2 ? `, ${address.address2}` : ''}<br />
+                {address.city}, {address.province} {address.zip}<br />
+                {address.country} — {address.email}
+              </p>
+
+              <div className="flex justify-between items-start border-t border-b border-neutral-200 py-3 mt-2">
+                <div className="flex gap-2 items-center text-neutral-900 font-bold text-sm">
+                  <Truck className="w-4 h-4 text-blue-600" />
+                  <span>Delivery Method</span>
+                </div>
+                <button type="button" onClick={() => setStep(2)} className="text-xs text-blue-600 underline font-medium">
+                  Edit
+                </button>
+              </div>
+              <p className="text-neutral-700 font-medium">
+                {selectedShipping.title} ({selectedShipping.estimatedTime}) — {selectedShipping.price === 0 ? 'Complimentary' : `$${selectedShipping.price}`}
+              </p>
+            </div>
+
             <div className="flex gap-4 mt-4">
               <Button variant="outline" size="lg" onClick={() => setStep(2)} className="gap-2">
                 <ArrowLeft className="w-4 h-4" />
@@ -197,8 +224,8 @@ export const CheckoutClient: React.FC = () => {
                 onClick={handleCompleteOrder}
                 className="gap-2 text-base font-bold shadow-xl"
               >
-                <ShieldCheck className="w-5 h-5" />
-                Complete Order & Pay
+                <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                Continue to Secure Shopify Checkout
               </Button>
             </div>
           </div>

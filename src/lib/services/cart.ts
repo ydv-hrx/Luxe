@@ -337,6 +337,7 @@ class ShopifyCartService implements ICartService {
       });
 
       const checkoutUrl = data?.cart?.checkoutUrl;
+      console.log("Checkout URL:", checkoutUrl);
       if (checkoutUrl && checkoutUrl.startsWith('http')) {
         return { checkoutUrl };
       }
