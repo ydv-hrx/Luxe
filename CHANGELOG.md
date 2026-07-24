@@ -1,5 +1,11 @@
 # LUXE Commerce Suite — Changelog
 
+## [Direct Shopify Checkout] - 2026-07-24
+### Changed
+- Refactored checkout flow to eliminate duplicate address and delivery input steps.
+- Configured `CartDrawer.tsx` and `CheckoutClient.tsx` with a single primary action: **"Continue to Secure Shopify Checkout"**.
+- Standardized direct browser redirection (`window.location.href = result.checkoutUrl`) so shipping address, delivery options, and payment processing are handled strictly once by Shopify's Hosted Checkout.
+
 ## [Checkout Refactoring] - 2026-07-24
 ### Changed
 - Removed redundant `PaymentSection` component and local credit card input state from `CheckoutClient.tsx`.

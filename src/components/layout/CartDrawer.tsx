@@ -1,14 +1,16 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCartStore } from '@/store/useCartStore';
 import { Button } from '@/components/ui/Button';
-import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, ShieldCheck } from 'lucide-react';
+import { X, Trash2, Plus, Minus, ShoppingBag, ShieldCheck } from 'lucide-react';
+import { cartService } from '@/lib/services/cart';
 
 export const CartDrawer: React.FC = () => {
-  const { isOpen, closeCart, items, updateQuantity, removeItem, getSubtotal } = useCartStore();
+  const { isOpen, closeCart, items, updateQuantity, removeItem, getSubtotal, clearCart } = useCartStore();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   if (!isOpen) return null;
 
@@ -16,6 +18,27 @@ export const CartDrawer: React.FC = () => {
   const freeShippingThreshold = 500;
   const progressPercent = Math.min(100, (subtotal / freeShippingThreshold) * 100);
   const remainingForFreeShipping = freeShippingThreshold - subtotal;
+
+  const handleCheckout = async () => {
+    setIsRedirecting(true);
+    try {
+      const cart = await cartService.createCart(
+        items.map((i) => ({ merchandiseId: i.variant.id, quantity: i.quantity }))
+      );
+      const result = await cartService.checkout(cart.id);
+      clearCart();
+      closeCart();
+
+      if (result.checkoutUrl && result.checkoutUrl.startsWith('http')) {
+        window.location.href = result.checkoutUrl;
+      } else {
+        window.location.href = result.checkoutUrl || '/checkout';
+      }
+    } catch (err) {
+      console.error('Cart checkout redirect error:', err);
+      setIsRedirecting(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true" aria-label="Shopping Cart">
@@ -157,12 +180,17 @@ export const CartDrawer: React.FC = () => {
                 Taxes and white-glove shipping calculated at checkout.
               </p>
 
-              <Link href="/checkout" onClick={closeCart} className="w-full">
-                <Button variant="primary" size="lg" fullWidth className="gap-2">
-                  Proceed to Checkout
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
-              </Link>
+              <Button
+                variant="primary"
+                size="lg"
+                fullWidth
+                isLoading={isRedirecting}
+                onClick={handleCheckout}
+                className="gap-2 text-xs uppercase tracking-wider font-bold shadow-xl"
+              >
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                Continue to Secure Shopify Checkout
+              </Button>
 
               <div className="flex items-center justify-center gap-1.5 text-[11px] text-neutral-500 pt-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
