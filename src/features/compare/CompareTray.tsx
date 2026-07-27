@@ -4,7 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { useCompareStore } from '@/store/useCompareStore';
 import { Button } from '@/components/ui/Button';
-import { X, Scale, ArrowRight, Trash2 } from 'lucide-react';
+import { X, Scale, ArrowRight } from 'lucide-react';
 import { CompareModal } from './CompareModal';
 
 export const CompareTray: React.FC = () => {

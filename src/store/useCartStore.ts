@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Product, ProductVariant, CartLineItem } from '@/types';
 import { cartService } from '@/lib/services/cart';
+import { analytics } from '@/lib/services/analytics';
 
 const STORAGE_KEY = 'luxe_shopify_cart_id';
 
@@ -74,8 +75,11 @@ export const useCartStore = create<CartState>((set, get) => ({
     const lineItemId = `${product.id}-${variant.id}`;
     const existingIndex = state.items.findIndex((item) => item.id === lineItemId);
 
+    // Track analytics event
+    analytics.addToCart(product, quantity, variant.title);
+
     // 1. Optimistic local state update
-    let updatedItems = [...state.items];
+    const updatedItems = [...state.items];
     if (existingIndex > -1) {
       updatedItems[existingIndex] = {
         ...updatedItems[existingIndex],
@@ -122,6 +126,11 @@ export const useCartStore = create<CartState>((set, get) => ({
 
   removeItem: async (lineItemId) => {
     const state = get();
+    const targetItem = state.items.find((item) => item.id === lineItemId);
+    if (targetItem) {
+      analytics.removeFromCart(targetItem);
+    }
+
     // 1. Optimistic UI update
     const filteredItems = state.items.filter((item) => item.id !== lineItemId);
     set({ items: filteredItems, error: null });

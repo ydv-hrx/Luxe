@@ -7,7 +7,7 @@ import { Product } from '@/types';
 import { giftService, GiftPackagingOption } from '@/lib/services/gifting';
 import { Button } from '@/components/ui/Button';
 import { GlassInput } from '@/components/ui/GlassInput';
-import { Gift, Check, ArrowRight, ArrowLeft, Sparkles, Package } from 'lucide-react';
+import { Gift, ArrowRight, Sparkles } from 'lucide-react';
 
 export interface GiftBuilderClientProps {
   availableProducts: Product[];

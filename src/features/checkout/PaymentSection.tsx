@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { GlassInput } from '@/components/ui/GlassInput';
-import { CreditCard, ShieldCheck, Lock, Check } from 'lucide-react';
+import { CreditCard, ShieldCheck, Lock } from 'lucide-react';
 
 export interface PaymentSectionProps {
   method: string;

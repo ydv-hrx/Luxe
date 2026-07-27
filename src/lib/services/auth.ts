@@ -9,6 +9,8 @@ export interface UserSession {
   tier: 'Member' | 'VIP' | 'Diamond';
 }
 
+import { Address as CustomerAddress } from './cart';
+
 export interface IAuthService {
   login(email: string, password?: string): Promise<UserSession>;
   register(firstName: string, lastName: string, email: string, password?: string): Promise<UserSession>;
@@ -16,6 +18,10 @@ export interface IAuthService {
   verifyOtp(email: string, code: string): Promise<UserSession>;
   logout(): Promise<boolean>;
   getCurrentSession(): Promise<UserSession | null>;
+  getAddresses(): Promise<CustomerAddress[]>;
+  saveAddress(address: Omit<CustomerAddress, 'id'>, editId?: string | null): Promise<CustomerAddress[]>;
+  deleteAddress(id: string): Promise<CustomerAddress[]>;
+  setDefaultAddress(id: string): Promise<CustomerAddress[]>;
 }
 
 const TOKEN_KEY = 'luxe_shopify_customer_token';
@@ -127,7 +133,7 @@ class ShopifyAuthService implements IAuthService {
         accessToken: token,
         tier: 'Diamond',
       };
-    } catch (err) {
+    } catch (_err) {
       return this.mockFallback.login(email, password);
     }
   }
@@ -150,7 +156,7 @@ class ShopifyAuthService implements IAuthService {
 
       // Automatically sign in upon successful registration
       return this.login(email, password);
-    } catch (err) {
+    } catch (_err) {
       return this.mockFallback.register(firstName, lastName, email, password);
     }
   }
@@ -172,12 +178,12 @@ class ShopifyAuthService implements IAuthService {
       }
 
       return true;
-    } catch (err) {
+    } catch (_err) {
       return this.mockFallback.requestPasswordReset(email);
     }
   }
 
-  async verifyOtp(email: string, code: string): Promise<UserSession> {
+  async verifyOtp(email: string, _code: string): Promise<UserSession> {
     return this.login(email);
   }
 
@@ -194,7 +200,7 @@ class ShopifyAuthService implements IAuthService {
         localStorage.removeItem(TOKEN_KEY);
       }
       return true;
-    } catch (err) {
+    } catch (_err) {
       if (typeof window !== 'undefined') localStorage.removeItem(TOKEN_KEY);
       return true;
     }
@@ -225,9 +231,25 @@ class ShopifyAuthService implements IAuthService {
         accessToken: token,
         tier: 'Diamond',
       };
-    } catch (err) {
+    } catch (_err) {
       return this.mockFallback.getCurrentSession();
     }
+  }
+
+  async getAddresses(): Promise<CustomerAddress[]> {
+    return this.mockFallback.getAddresses();
+  }
+
+  async saveAddress(address: Omit<CustomerAddress, 'id'>, editId?: string | null): Promise<CustomerAddress[]> {
+    return this.mockFallback.saveAddress(address, editId);
+  }
+
+  async deleteAddress(id: string): Promise<CustomerAddress[]> {
+    return this.mockFallback.deleteAddress(id);
+  }
+
+  async setDefaultAddress(id: string): Promise<CustomerAddress[]> {
+    return this.mockFallback.setDefaultAddress(id);
   }
 }
 
@@ -241,10 +263,26 @@ class MockAuthService implements IAuthService {
     tier: 'Diamond',
   };
 
-  async login(email: string, password?: string): Promise<UserSession> {
+  private addresses: CustomerAddress[] = [
+    {
+      id: 'addr-1',
+      firstName: 'Julian',
+      lastName: 'Vane',
+      email: 'julian.vane@luxe.com',
+      address1: '740 Park Avenue',
+      address2: 'Penthouse B',
+      city: 'New York',
+      province: 'NY',
+      zip: '10021',
+      country: 'United States',
+      isDefault: true,
+    },
+  ];
+
+  async login(_email: string, _password?: string): Promise<UserSession> {
     const session: UserSession = {
       id: `usr-${Date.now()}`,
-      email,
+      email: _email,
       firstName: 'Julian',
       lastName: 'Vane',
       accessToken: `token-${Date.now()}`,
@@ -254,10 +292,10 @@ class MockAuthService implements IAuthService {
     return Promise.resolve(session);
   }
 
-  async register(firstName: string, lastName: string, email: string, password?: string): Promise<UserSession> {
+  async register(firstName: string, lastName: string, _email: string, _password?: string): Promise<UserSession> {
     const session: UserSession = {
       id: `usr-${Date.now()}`,
-      email,
+      email: _email,
       firstName,
       lastName,
       accessToken: `token-${Date.now()}`,
@@ -267,11 +305,11 @@ class MockAuthService implements IAuthService {
     return Promise.resolve(session);
   }
 
-  async requestPasswordReset(email?: string): Promise<boolean> {
+  async requestPasswordReset(_email?: string): Promise<boolean> {
     return Promise.resolve(true);
   }
 
-  async verifyOtp(email: string, code: string): Promise<UserSession> {
+  async verifyOtp(email: string, _code: string): Promise<UserSession> {
     return this.login(email);
   }
 
@@ -282,6 +320,30 @@ class MockAuthService implements IAuthService {
 
   async getCurrentSession(): Promise<UserSession | null> {
     return Promise.resolve(this.currentSession);
+  }
+
+  async getAddresses(): Promise<CustomerAddress[]> {
+    return Promise.resolve(this.addresses);
+  }
+
+  async saveAddress(address: Omit<CustomerAddress, 'id'>, editId?: string | null): Promise<CustomerAddress[]> {
+    if (editId) {
+      this.addresses = this.addresses.map((a) => (a.id === editId ? { ...address, id: editId } : a));
+    } else {
+      const newAddr: CustomerAddress = { ...address, id: `addr-${Date.now()}` };
+      this.addresses.push(newAddr);
+    }
+    return Promise.resolve(this.addresses);
+  }
+
+  async deleteAddress(id: string): Promise<CustomerAddress[]> {
+    this.addresses = this.addresses.filter((a) => a.id !== id);
+    return Promise.resolve(this.addresses);
+  }
+
+  async setDefaultAddress(id: string): Promise<CustomerAddress[]> {
+    this.addresses = this.addresses.map((a) => ({ ...a, isDefault: a.id === id }));
+    return Promise.resolve(this.addresses);
   }
 }
 

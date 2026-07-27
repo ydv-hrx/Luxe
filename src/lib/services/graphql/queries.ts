@@ -1,6 +1,5 @@
 /**
- * Shopify Storefront GraphQL Query Placeholders
- * Ready to be used by ShopifyStorefrontClient when production API credentials are provided.
+ * Shopify Storefront GraphQL Query Definitions
  */
 
 export const PRODUCT_FRAGMENT = `
@@ -65,6 +64,16 @@ export const PRODUCT_FRAGMENT = `
         }
       }
     }
+    metafields(identifiers: [
+      { namespace: "custom", key: "material" },
+      { namespace: "custom", key: "care_guide" },
+      { namespace: "custom", key: "craftsmanship" },
+      { namespace: "custom", key: "shipping_info" },
+      { namespace: "custom", key: "size_guide" }
+    ]) {
+      key
+      value
+    }
   }
 `;
 
@@ -85,6 +94,15 @@ export const GET_PRODUCTS_QUERY = `
           ...ProductFields
         }
       }
+    }
+  }
+  ${PRODUCT_FRAGMENT}
+`;
+
+export const GET_PRODUCT_RECOMMENDATIONS_QUERY = `
+  query GetProductRecommendations($productId: ID!) {
+    productRecommendations(productId: $productId) {
+      ...ProductFields
     }
   }
   ${PRODUCT_FRAGMENT}
@@ -153,6 +171,13 @@ export const GET_COLLECTION_BY_HANDLE_QUERY = `
         url
         altText
       }
+      metafields(identifiers: [
+        { namespace: "custom", key: "campaign_copy" },
+        { namespace: "custom", key: "collection_story" }
+      ]) {
+        key
+        value
+      }
       products(first: $first) {
         edges {
           node {
@@ -163,4 +188,26 @@ export const GET_COLLECTION_BY_HANDLE_QUERY = `
     }
   }
   ${PRODUCT_FRAGMENT}
+`;
+
+export const GET_METAOBJECT_QUERY = `
+  query GetMetaobject($handle: String!, $type: String!) {
+    metaobject(handle: { handle: $handle, type: $type }) {
+      id
+      handle
+      type
+      fields {
+        key
+        value
+        reference {
+          ... on MediaImage {
+            image {
+              url
+              altText
+            }
+          }
+        }
+      }
+    }
+  }
 `;

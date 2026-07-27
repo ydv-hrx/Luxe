@@ -26,6 +26,14 @@ export interface ProductVariant {
   image?: ImageAsset;
 }
 
+export interface ProductMetafields {
+  materials?: string;
+  careGuide?: string;
+  craftsmanship?: string;
+  shippingInfo?: string;
+  sizeGuide?: string;
+}
+
 export interface Product {
   id: string;
   handle: string;
@@ -47,6 +55,13 @@ export interface Product {
   reviewCount?: number;
   specifications?: Record<string, string>;
   careInstructions?: string[];
+  metafields?: ProductMetafields;
+}
+
+export interface CollectionMetafields {
+  campaignCopy?: string;
+  collectionStory?: string;
+  bannerImage?: ImageAsset;
 }
 
 export interface Collection {
@@ -56,6 +71,7 @@ export interface Collection {
   description: string;
   image: ImageAsset;
   itemCount: number;
+  metafields?: CollectionMetafields;
 }
 
 export interface CartLineItem {
@@ -81,7 +97,7 @@ export interface FilterState {
   colors: string[];
   sizes: string[];
   inStockOnly: boolean;
-  sortBy: 'featured' | 'price-asc' | 'price-desc' | 'newest';
+  sortBy: 'featured' | 'price-asc' | 'price-desc' | 'newest' | 'best-selling';
   query?: string;
 }
 

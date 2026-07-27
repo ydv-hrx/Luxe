@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Truck, Sparkles, Clock } from 'lucide-react';
+import { Truck, Clock } from 'lucide-react';
 
 export interface ShippingMethod {
   id: string;

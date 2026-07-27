@@ -3,13 +3,15 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { authService } from '@/lib/services/auth';
+import { useAuthStore } from '@/store/useAuthStore';
 import { GlassInput } from '@/components/ui/GlassInput';
 import { Button } from '@/components/ui/Button';
-import { Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Lock, Mail, ArrowRight } from 'lucide-react';
 
 export const LoginForm: React.FC = () => {
   const router = useRouter();
+  const login = useAuthStore((state) => state.login);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -20,10 +22,10 @@ export const LoginForm: React.FC = () => {
     setIsLoading(true);
     setError('');
     try {
-      await authService.login(email, password);
+      await login(email, password);
       router.push('/account');
-    } catch (err) {
-      setError('Invalid credentials. Please verify your email and password.');
+    } catch (err: unknown) {
+      setError((err as Error)?.message || 'Invalid credentials. Please verify your email and password.');
       setIsLoading(false);
     }
   };
@@ -31,7 +33,7 @@ export const LoginForm: React.FC = () => {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5 max-w-md w-full mx-auto">
       {error && (
-        <div className="p-3.5 bg-red-50 text-red-700 border border-red-200 rounded-xl text-xs font-medium">
+        <div className="p-3.5 bg-red-50 text-red-700 border border-red-200 rounded-xl text-xs font-medium" role="alert">
           {error}
         </div>
       )}
@@ -44,6 +46,7 @@ export const LoginForm: React.FC = () => {
         icon={<Mail className="w-4 h-4" />}
         placeholder="julian.vane@luxe.com"
         required
+        aria-required="true"
       />
 
       <GlassInput
@@ -54,11 +57,12 @@ export const LoginForm: React.FC = () => {
         icon={<Lock className="w-4 h-4" />}
         placeholder="••••••••••••"
         required
+        aria-required="true"
       />
 
       <div className="flex items-center justify-between text-xs">
         <label className="flex items-center gap-2 cursor-pointer text-neutral-600">
-          <input type="checkbox" className="w-4 h-4 accent-black rounded" />
+          <input type="checkbox" defaultChecked className="w-4 h-4 accent-black rounded cursor-pointer" />
           <span>Remember Device</span>
         </label>
         <Link href="/recover" className="text-blue-600 font-semibold hover:underline">

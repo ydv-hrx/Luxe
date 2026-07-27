@@ -2,8 +2,6 @@ import React, { Suspense } from 'react';
 import { Metadata } from 'next';
 import dynamic from 'next/dynamic';
 import { loyaltyService } from '@/lib/services/loyalty';
-import { Badge } from '@/components/ui/Badge';
-import { Gem } from 'lucide-react';
 
 const LoyaltyDashboardClient = dynamic(
   () => import('@/features/loyalty/LoyaltyDashboardClient').then((m) => m.LoyaltyDashboardClient)

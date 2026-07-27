@@ -1,8 +1,6 @@
 import React, { Suspense } from 'react';
 import { Metadata } from 'next';
 import dynamic from 'next/dynamic';
-import { Badge } from '@/components/ui/Badge';
-import { RefreshCw } from 'lucide-react';
 
 const ReturnsPortalClient = dynamic(
   () => import('@/features/returns/ReturnsPortalClient').then((m) => m.ReturnsPortalClient)

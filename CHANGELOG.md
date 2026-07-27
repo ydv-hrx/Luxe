@@ -1,5 +1,28 @@
 # LUXE Commerce Suite — Changelog
 
+## [Phase 13.9 LUXE Atelier Club Newsletter Section] - 2026-07-25
+### Changed
+- Created `LuxeAtelierClubSection.tsx` with quiet luxury aesthetics inspired by Loro Piana, Brunello Cucinelli, COS, Apple, and Aesop.
+- Soft ivory background (`#F8F6F2` / `border-[#EAE6DF]`), centered layout, generous whitespace, eyebrow `PRIVATE MEMBERSHIP`, 56px font-serif heading `Join the LUXE Atelier Club`, body text, email input, black CTA button `Join the Atelier →`, and privacy note.
+- Rendered on `/collections` landing page in `src/app/collections/page.tsx`.
+- Maintained 100% of underlying application logic, Shopify Storefront API integrations, product fetching, filters, cart, wishlist, and Zustand stores.
+
+## [Phase 13.9 Left-Aligned Stitch Editorial Hero Layout] - 2026-07-25
+### Changed
+- Updated `CollectionHero.tsx` layout and typography to match the exact Stitch magazine cover composition from Screen `4d5ce9661ee8474b99cf1f4786aa2ddd`.
+- Heading: Replaced centered title with left-aligned `The Art of <br /><span className="italic font-serif">Refinement</span>` (84px font-serif).
+- Layout: Shifted all content to the left third (`items-start text-left px-8 sm:px-16 lg:px-24`).
+- Badge: `Handcrafted in Italy` placed above heading on the left (`text-xs font-semibold uppercase tracking-[0.3em] text-white/90`).
+- CTA Button: Added `EXPLORE THE COLLECTION` button with a horizontal decorative line (`<div className="hidden md:block w-24 h-[1px] bg-white/70"></div>`).
+- Heritage Stamp: Added `EST. 1924 — MILAN` vertical text stamp on the bottom right (`[writing-mode:vertical-rl] rotate-180`).
+- Maintained 100% of underlying application logic, Shopify Storefront API integrations, product fetching, filters, cart, wishlist, and Zustand stores.
+
+## [Phase 13.9 Stitch Collection Page Implementation] - 2026-07-25
+### Changed
+- Integrated design specs and hosted media assets from Stitch Project `LUXE Editorial Collection Experience` (`15042630559647833555`, Screen `4d5ce9661ee8474b99cf1f4786aa2ddd`).
+- Updated `CollectionHero.tsx` to consume primary Stitch campaign imagery (`AB6AXuD_Fffw6tZfV95NmBJlldND0byucGSLQ9...`), Milan heritage pill badge (`EST. 1924 — MILAN`), and high-contrast typography hierarchy.
+- Maintained 100% of underlying application logic, Shopify Storefront API integrations, product fetching, filters, cart, wishlist, and Zustand stores.
+
 ## [Phase 13.8 Editorial Hero Carousel] - 2026-07-25
 ### Changed
 - Replaced static hero in `CollectionHero.tsx` with a production-ready Editorial Hero Carousel.

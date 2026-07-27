@@ -1,29 +1,22 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useCartStore } from '@/store/useCartStore';
 import { useWishlistStore } from '@/store/useWishlistStore';
 import { commerceService } from '@/lib/services/commerce';
 import { cartService } from '@/lib/services/cart';
-import { ProductCard } from '@/components/ui/ProductCard';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
 import { Product } from '@/types';
 import {
   ShoppingBag,
-  Trash2,
   Plus,
   Minus,
-  Heart,
-  ArrowRight,
-  ShieldCheck,
   Truck,
   RotateCcw,
-  Sparkles,
   Lock,
-  ExternalLink,
+  Gift,
+  ShieldCheck,
+  Tag,
 } from 'lucide-react';
 
 export const CartPageClient: React.FC = () => {
@@ -32,17 +25,17 @@ export const CartPageClient: React.FC = () => {
 
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [recommendations, setRecommendations] = useState<Product[]>([]);
-  const [addedToWishlist, setAddedToWishlist] = useState<Record<string, boolean>>({});
+  const [promoCode, setPromoCode] = useState('');
+  const [promoApplied, setPromoApplied] = useState(false);
 
   const subtotal = getSubtotal();
-  const freeShippingThreshold = 500;
-  const progressPercent = Math.min(100, (subtotal / freeShippingThreshold) * 100);
-  const remainingForFreeShipping = freeShippingThreshold - subtotal;
   const totalItemCount = items.reduce((acc, i) => acc + i.quantity, 0);
+  const estimatedTax = subtotal * 0.08;
+  const estimatedTotal = subtotal + (subtotal > 0 ? estimatedTax : 0);
 
   useEffect(() => {
     commerceService.getProducts().then((all) => {
-      setRecommendations(all.slice(0, 3));
+      setRecommendations(all.slice(0, 4));
     });
   }, []);
 
@@ -82,296 +75,349 @@ export const CartPageClient: React.FC = () => {
     };
     toggleWishlist(fullProduct);
     removeItem(item.id);
-    setAddedToWishlist((prev) => ({ ...prev, [item.id]: true }));
-    setTimeout(() => {
-      setAddedToWishlist((prev) => ({ ...prev, [item.id]: false }));
-    }, 2000);
   };
 
-  // Luxury Empty State
+  // EMPTY CART STATE (Stitch Editorial Empty Bag)
   if (items.length === 0) {
     return (
-      <div className="py-20 sm:py-28 text-center flex flex-col items-center justify-center gap-6 max-w-xl mx-auto px-6 animate-in fade-in duration-300">
-        <div className="p-6 bg-neutral-100 text-neutral-400 rounded-full border border-neutral-200/80 shadow-md">
-          <ShoppingBag className="w-12 h-12 stroke-[1.5]" />
+      <main className="max-w-[1440px] mx-auto px-6 sm:px-12 lg:px-16 py-20 sm:py-28 min-h-[70vh] flex flex-col items-center justify-center text-center font-sans">
+        <div className="w-20 h-20 bg-neutral-100 rounded-full flex items-center justify-center mb-6 text-neutral-500">
+          <ShoppingBag className="w-10 h-10 stroke-[1.5]" />
         </div>
+        <span className="font-sans text-xs font-semibold uppercase tracking-[0.2em] text-neutral-400 mb-2">
+          LUXORA ATELIER
+        </span>
+        <h1 className="font-serif text-3xl sm:text-5xl font-normal text-black mb-4">
+          Your Shopping Bag is Empty
+        </h1>
+        <p className="font-sans text-sm sm:text-base text-neutral-500 max-w-md mx-auto mb-8 leading-relaxed">
+          Curate your wardrobe with Grade-A cashmere knits, architectural stone vessels, and bespoke accessories.
+        </p>
+        <Link
+          href="/shop"
+          className="bg-black text-white px-10 py-5 font-sans text-xs font-semibold uppercase tracking-[0.2em] hover:bg-neutral-800 transition-colors inline-block"
+        >
+          CONTINUE SHOPPING
+        </Link>
 
-        <div className="space-y-3">
-          <span className="text-xs font-bold uppercase tracking-widest text-neutral-400">Atelier Shopping Bag</span>
-          <h1 className="text-3xl sm:text-5xl font-bold font-serif text-neutral-900 tracking-tight leading-tight">
-            Your Shopping Bag Is Empty
-          </h1>
-          <p className="text-sm text-neutral-500 max-w-md mx-auto leading-relaxed">
-            Curate your wardrobe with Grade-A Mongolian cashmere knits, architectural coats, and bespoke accessories.
-          </p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-center gap-3 pt-4 w-full sm:w-auto">
-          <Button variant="primary" size="lg" className="w-full sm:w-auto gap-2 shadow-md py-4 font-bold">
-            <Link href="/shop" className="flex items-center gap-2">
-              Continue Shopping <ArrowRight className="w-4 h-4" />
-            </Link>
-          </Button>
-          <Button variant="outline" size="lg" className="w-full sm:w-auto gap-2 py-4 font-bold">
-            <Link href="/collections" className="flex items-center gap-2">
-              Explore New Arrivals <ExternalLink className="w-4 h-4" />
-            </Link>
-          </Button>
-        </div>
-      </div>
+        {/* Recommendations Grid when empty */}
+        {recommendations.length > 0 && (
+          <div className="w-full mt-20 pt-16 border-t border-neutral-200 text-left">
+            <div className="flex justify-between items-end mb-8">
+              <h2 className="font-serif text-2xl sm:text-3xl text-black font-normal">
+                Recommended Curations
+              </h2>
+              <Link
+                href="/shop"
+                className="font-sans text-xs font-semibold uppercase tracking-widest text-black border-b border-black pb-1 hover:opacity-60 transition-opacity"
+              >
+                DISCOVER ALL
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+              {recommendations.map((prod) => (
+                <div key={prod.id} className="group cursor-pointer">
+                  <div className="aspect-[4/5] bg-neutral-100 overflow-hidden mb-3 relative">
+                    <Link href={`/products/${prod.handle}`}>
+                      <img
+                        src={prod.images[0]?.url || ''}
+                        alt={prod.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                    </Link>
+                  </div>
+                  <p className="font-sans text-[10px] text-neutral-400 uppercase tracking-widest mb-1">
+                    {prod.vendor || 'LUXORA'}
+                  </p>
+                  <h4 className="font-sans text-xs font-medium text-black line-clamp-1 group-hover:underline">
+                    {prod.title}
+                  </h4>
+                  <p className="font-sans text-xs font-semibold text-black mt-1">
+                    ${prod.price.amount.toLocaleString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </main>
     );
   }
 
   return (
-    <div className="flex flex-col gap-10 max-w-[1440px] mx-auto px-6 sm:px-8 py-10 sm:py-12">
-      {/* Header Bar Card */}
-      <div className="p-8 sm:p-10 bg-white rounded-3xl border border-neutral-200/80 shadow-lumina-level1 flex flex-col md:flex-row md:items-center justify-between gap-6 animate-in fade-in duration-300">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-blue-600" />
-            <span className="text-xs font-bold uppercase tracking-widest text-neutral-400">Curated Collection</span>
-          </div>
-          <h1 className="text-4xl sm:text-5xl font-bold font-serif text-neutral-900 tracking-tight">
-            Shopping Bag
-          </h1>
-          <p className="text-sm text-neutral-500">
-            Review your curated luxury garments and accessories before checkout.
-          </p>
-        </div>
+    <main className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-16 min-h-screen font-sans">
+      {/* Hero Section */}
+      <section className="pt-12 sm:pt-20 pb-8 sm:pb-12 text-center">
+        <h1 className="font-serif text-4xl sm:text-6xl font-normal text-black tracking-tight">
+          Shopping Bag
+        </h1>
+        <p className="font-sans text-xs font-semibold text-neutral-500 uppercase tracking-[0.2em] mt-3">
+          Curated Selection ({totalItemCount} {totalItemCount === 1 ? 'Item' : 'Items'})
+        </p>
+      </section>
 
-        {/* Header Metric Cards */}
-        <div className="grid grid-cols-2 gap-4 shrink-0">
-          <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-200/60 text-center">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Total Items</span>
-            <span className="text-xl font-bold font-serif text-neutral-900 mt-0.5 block">{totalItemCount} Pieces</span>
-          </div>
-          <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-200/60 text-center">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Estimated Total</span>
-            <span className="text-xl font-bold font-serif text-neutral-900 mt-0.5 block">${subtotal.toFixed(0)} USD</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Complimentary Courier Progress Banner */}
-      <div className="p-6 bg-blue-50/70 rounded-3xl border border-blue-100 flex flex-col gap-3">
-        <div className="flex items-center justify-between text-xs font-semibold text-blue-900">
-          <span className="flex items-center gap-2">
-            <Truck className="w-5 h-5 text-blue-600" />
-            {remainingForFreeShipping <= 0 ? (
-              <span className="font-bold text-emerald-700 text-sm">🎉 You Have Unlocked Complimentary White-Glove Courier Delivery!</span>
-            ) : (
-              <span>Add <strong className="text-black font-bold">${remainingForFreeShipping.toFixed(0)} USD</strong> more for complimentary courier delivery</span>
-            )}
-          </span>
-          <span className="text-xs font-bold text-blue-700">{progressPercent.toFixed(0)}%</span>
-        </div>
-        <div className="w-full bg-blue-200/60 h-2 rounded-full overflow-hidden">
-          <div
-            className="bg-neutral-900 h-full transition-all duration-700 rounded-full"
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Main Grid Layout: Left 70% (Cart Items + Carousel) & Right 30% (Sticky Order Summary) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-        {/* Left Column (70%): Line Items List & Recommendations */}
-        <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-10">
-          {/* Cart Line Items List */}
-          <div className="flex flex-col gap-6">
+      {/* Two Column Layout (Left: Items 65%, Right: Order Summary 35%) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 pb-24">
+        {/* LEFT COLUMN: Cart Line Items & Shipping Benefits */}
+        <div className="lg:col-span-8 flex flex-col gap-8 lg:gap-12">
+          {/* Cart Line Items */}
+          <div className="flex flex-col gap-8 sm:gap-12">
             {items.map((item) => (
               <div
                 key={item.id}
-                className="group p-6 bg-white rounded-3xl border border-neutral-200/80 shadow-lumina-level1 hover:shadow-lumina-level2 transition-all duration-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 hover:-translate-y-0.5"
+                className="flex flex-col sm:flex-row gap-6 sm:gap-8 pb-8 sm:pb-12 border-b border-neutral-200 group"
               >
-                <div className="flex items-center gap-6">
-                  <div className="relative w-28 h-36 bg-neutral-100 rounded-2xl overflow-hidden flex-shrink-0 border border-neutral-200/60 shadow-sm">
-                    <Image
+                {/* Product Image */}
+                <div className="w-full sm:w-1/3 aspect-[3/4] overflow-hidden bg-neutral-100 shrink-0">
+                  <Link href={`/products/${item.product.handle}`}>
+                    <img
                       src={
                         item.variant.image?.url ||
                         'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=300&q=80'
                       }
                       alt={item.product.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
-                        {item.product.vendor}
-                      </span>
-                      <Badge variant="primary" size="sm">In Stock</Badge>
-                    </div>
-
-                    <Link href={`/products/${item.product.handle}`} className="block">
-                      <h3 className="text-xl font-bold font-serif text-neutral-900 group-hover:text-blue-900 transition-colors">
-                        {item.product.title}
-                      </h3>
-                    </Link>
-
-                    <p className="text-xs text-neutral-500 font-medium">
-                      Variant: {item.variant.title}
-                    </p>
-
-                    <p className="text-xs text-neutral-400">
-                      Estimated Dispatch: <strong className="text-neutral-700">1 - 2 Business Days</strong>
-                    </p>
-
-                    <div className="pt-2 flex items-baseline gap-3">
-                      <span className="text-base font-bold font-serif text-neutral-900">
-                        ${(item.variant.price.amount * item.quantity).toFixed(0)} USD
-                      </span>
-                      <span className="text-xs text-neutral-400">
-                        (${item.variant.price.amount} each)
-                      </span>
-                    </div>
-                  </div>
+                  </Link>
                 </div>
 
-                {/* Quantity Controls & Item Actions */}
-                <div className="flex flex-col sm:items-end justify-between gap-4 w-full sm:w-auto border-t sm:border-t-0 pt-4 sm:pt-0 border-neutral-100">
-                  <div className="flex items-center border border-neutral-200 rounded-2xl bg-neutral-50/80 p-1">
-                    <button
-                      type="button"
-                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      className="p-2 text-neutral-600 hover:text-black transition-colors"
-                      aria-label="Decrease quantity"
-                    >
-                      <Minus className="w-4 h-4" />
-                    </button>
-                    <span className="px-4 text-sm font-bold text-neutral-900">
-                      {item.quantity}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      className="p-2 text-neutral-600 hover:text-black transition-colors"
-                      aria-label="Increase quantity"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
+                {/* Product Details & Actions */}
+                <div className="w-full sm:w-2/3 flex flex-col justify-between gap-4">
+                  <div>
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="space-y-1">
+                        <p className="font-sans text-[10px] font-semibold text-neutral-400 uppercase tracking-widest">
+                          {item.product.vendor || 'LUXORA ATELIER'}
+                        </p>
+                        <Link href={`/products/${item.product.handle}`}>
+                          <h2 className="font-serif text-xl sm:text-2xl font-normal text-black hover:underline underline-offset-4">
+                            {item.product.title}
+                          </h2>
+                        </Link>
+                        <p className="font-sans text-xs text-neutral-500">
+                          Variant: {item.variant.title}
+                        </p>
+                      </div>
+                      <p className="font-sans text-base sm:text-lg font-semibold text-black shrink-0">
+                        ${(item.variant.price.amount * item.quantity).toLocaleString()}
+                      </p>
+                    </div>
+
+                    {/* Quantity & Actions Row */}
+                    <div className="mt-6 flex flex-wrap items-center gap-6 sm:gap-8">
+                      {/* Quantity Counter */}
+                      <div className="flex items-center border border-neutral-300 px-3 py-1.5 bg-white">
+                        <button
+                          type="button"
+                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          className="p-1 text-neutral-600 hover:text-black transition-colors"
+                          aria-label="Decrease quantity"
+                        >
+                          <Minus className="w-3.5 h-3.5" />
+                        </button>
+                        <span className="font-sans text-xs font-semibold px-5 text-black">
+                          {item.quantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          className="p-1 text-neutral-600 hover:text-black transition-colors"
+                          aria-label="Increase quantity"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      {/* Save for later & Remove */}
+                      <div className="flex items-center gap-5 text-xs">
+                        <button
+                          type="button"
+                          onClick={() => handleMoveToWishlist(item)}
+                          className="font-sans font-semibold text-neutral-500 hover:text-black border-b border-transparent hover:border-black pb-0.5 transition-all uppercase tracking-wider"
+                        >
+                          Save for later
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeItem(item.id)}
+                          className="font-sans font-semibold text-red-600 hover:opacity-70 border-b border-transparent hover:border-red-600 pb-0.5 transition-opacity uppercase tracking-wider"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-4 text-xs font-semibold">
-                    <button
-                      type="button"
-                      onClick={() => handleMoveToWishlist(item)}
-                      className="text-neutral-500 hover:text-red-600 transition-colors flex items-center gap-1.5"
-                    >
-                      <Heart className="w-4 h-4" />
-                      <span>Save to Wishlist</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => removeItem(item.id)}
-                      className="text-neutral-400 hover:text-red-600 transition-colors p-1"
-                      aria-label={`Remove ${item.product.title} from cart`}
-                    >
-                      <Trash2 className="w-4.5 h-4.5" />
-                    </button>
+                  {/* Stock Indicator */}
+                  <div className="flex items-center gap-2 text-neutral-500 pt-2">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span className="font-sans text-[10px] font-semibold uppercase tracking-wider text-neutral-600">
+                      In Stock & Ready to Ship
+                    </span>
                   </div>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* You May Also Like / Recommendations Carousel */}
-          {recommendations.length > 0 && (
-            <div className="flex flex-col gap-6 pt-6 border-t border-neutral-200/80">
-              <div>
-                <h2 className="text-2xl font-bold font-serif text-neutral-900">You May Also Like</h2>
-                <p className="text-xs text-neutral-500 mt-0.5">Complementary luxury garments curated for your wardrobe.</p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                {recommendations.map((prod) => (
-                  <ProductCard key={prod.id} product={prod} />
-                ))}
-              </div>
+          {/* Shipping Benefits Strip */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-6 border-t border-neutral-200">
+            <div className="flex flex-col items-center text-center space-y-2">
+              <Truck className="w-6 h-6 text-black stroke-[1.5]" />
+              <p className="font-sans text-[10px] font-semibold uppercase tracking-widest leading-relaxed text-black">
+                Complimentary<br />Shipping
+              </p>
             </div>
-          )}
-        </div>
-
-        {/* Right Column (30%): Sticky Order Summary & Trust Badges */}
-        <div className="lg:col-span-5 xl:col-span-4 sticky top-28 flex flex-col gap-6">
-          <div className="p-8 bg-white rounded-3xl border border-neutral-200/80 shadow-lumina-level1 flex flex-col gap-6 text-sm">
-            <h3 className="text-xl font-bold font-serif text-neutral-900 pb-4 border-b border-neutral-100">
-              Order Financial Summary
-            </h3>
-
-            <div className="flex flex-col gap-3 pb-6 border-b border-neutral-100">
-              <div className="flex justify-between text-neutral-600">
-                <span>Subtotal</span>
-                <span className="font-bold text-neutral-900">${subtotal.toFixed(0)} USD</span>
-              </div>
-              <div className="flex justify-between text-neutral-600">
-                <span>White-Glove Courier Delivery</span>
-                <span className="font-bold text-emerald-700">
-                  {remainingForFreeShipping <= 0 ? 'Complimentary' : '$25 USD'}
-                </span>
-              </div>
-              <div className="flex justify-between text-neutral-600">
-                <span>Estimated Taxes</span>
-                <span className="font-semibold text-neutral-900">Calculated at Checkout</span>
-              </div>
+            <div className="flex flex-col items-center text-center space-y-2">
+              <RotateCcw className="w-6 h-6 text-black stroke-[1.5]" />
+              <p className="font-sans text-[10px] font-semibold uppercase tracking-widest leading-relaxed text-black">
+                30-Day Easy<br />Returns
+              </p>
             </div>
-
-            {/* Total Callout */}
-            <div className="flex justify-between items-baseline pt-2">
-              <span className="text-base font-bold text-neutral-900">Estimated Total</span>
-              <span className="text-3xl font-bold font-serif text-neutral-900">${subtotal.toFixed(0)} USD</span>
+            <div className="flex flex-col items-center text-center space-y-2">
+              <Lock className="w-6 h-6 text-black stroke-[1.5]" />
+              <p className="font-sans text-[10px] font-semibold uppercase tracking-widest leading-relaxed text-black">
+                Secure<br />Checkout
+              </p>
             </div>
-
-            {/* Actions */}
-            <div className="flex flex-col gap-3 pt-4">
-              <Button
-                variant="primary"
-                size="lg"
-                fullWidth
-                isLoading={isRedirecting}
-                onClick={handleCheckout}
-                className="gap-2 shadow-xl py-4 text-sm font-bold"
-              >
-                <Lock className="w-4 h-4 text-emerald-400" /> Continue to Secure Shopify Checkout
-              </Button>
-
-              <Button variant="outline" size="lg" fullWidth className="gap-2 font-bold py-3.5 text-xs">
-                <Link href="/shop" className="flex items-center gap-2 justify-center">
-                  Continue Shopping <ArrowRight className="w-4 h-4" />
-                </Link>
-              </Button>
+            <div className="flex flex-col items-center text-center space-y-2">
+              <Gift className="w-6 h-6 text-black stroke-[1.5]" />
+              <p className="font-sans text-[10px] font-semibold uppercase tracking-widest leading-relaxed text-black">
+                Luxury<br />Packaging
+              </p>
             </div>
           </div>
+        </div>
 
-          {/* Trust Badges Card */}
-          <div className="p-6 bg-neutral-50/60 rounded-3xl border border-neutral-200/80 flex flex-col gap-4 text-xs">
-            <h4 className="font-bold text-neutral-900 text-sm border-b border-neutral-200/60 pb-3">
-              Atelier Guarantee & Encryption
-            </h4>
-            <div className="grid grid-cols-2 gap-4 text-neutral-700 font-semibold">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>256-Bit Encrypted</span>
+        {/* RIGHT COLUMN: Order Summary (35%) */}
+        <div className="lg:col-span-4">
+          <div className="sticky top-28 bg-[#f3f3f3] p-6 sm:p-8 space-y-6">
+            <h3 className="font-serif text-2xl font-normal text-black">Summary</h3>
+
+            <div className="space-y-3 font-sans text-sm">
+              <div className="flex justify-between items-center">
+                <span className="text-neutral-600">Subtotal</span>
+                <span className="font-semibold text-black">${subtotal.toLocaleString()}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <RotateCcw className="w-4 h-4 text-blue-600 shrink-0" />
-                <span>30-Day Returns</span>
+              <div className="flex justify-between items-center">
+                <span className="text-neutral-600">Shipping</span>
+                <span className="font-semibold text-emerald-700">Complimentary</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Truck className="w-4 h-4 text-blue-600 shrink-0" />
-                <span>Insured Transit</span>
+              <div className="flex justify-between items-center">
+                <span className="text-neutral-600">Estimated Tax</span>
+                <span className="font-semibold text-black">${estimatedTax.toFixed(2)}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
-                <span>RFID Authenticated</span>
+              <div className="pt-4 border-t border-neutral-300 flex justify-between items-center">
+                <span className="font-sans text-xs font-semibold uppercase tracking-widest text-black">
+                  Estimated Total
+                </span>
+                <span className="font-sans text-xl font-bold text-black">
+                  ${estimatedTotal.toFixed(2)}
+                </span>
               </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-3 pt-2">
+              <button
+                type="button"
+                onClick={handleCheckout}
+                disabled={isRedirecting}
+                className="w-full bg-black text-white py-5 font-sans text-xs font-semibold uppercase tracking-[0.2em] hover:bg-neutral-800 transition-colors duration-300 disabled:opacity-50"
+              >
+                {isRedirecting ? 'REDIRECTING TO CHECKOUT...' : 'PROCEED TO CHECKOUT'}
+              </button>
+
+              <Link
+                href="/shop"
+                className="w-full border border-black text-black py-5 font-sans text-xs font-semibold uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-all duration-300 block text-center"
+              >
+                CONTINUE SHOPPING
+              </Link>
+            </div>
+
+            {/* Promo Code Entry */}
+            <div className="pt-4 border-t border-neutral-300">
+              <div className="flex items-center gap-2 mb-3">
+                <Tag className="w-4 h-4 text-neutral-500" />
+                <span className="font-sans text-xs font-semibold uppercase tracking-widest text-black">
+                  Promo Code
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value)}
+                  placeholder="Enter code"
+                  className="w-full bg-transparent border-b border-neutral-400 py-2 text-xs font-sans focus:outline-none focus:border-black placeholder:text-neutral-400 uppercase"
+                />
+                <button
+                  type="button"
+                  onClick={() => setPromoApplied(true)}
+                  className="font-sans text-xs font-semibold uppercase tracking-wider text-black border-b border-black pb-1 shrink-0 hover:opacity-60"
+                >
+                  Apply
+                </button>
+              </div>
+              {promoApplied && (
+                <p className="text-[11px] text-emerald-700 font-semibold mt-2">
+                  Promo code applied successfully.
+                </p>
+              )}
+            </div>
+
+            {/* Payment & Security Assurance Box */}
+            <div className="bg-[#eeeeee] p-5 border border-neutral-200 text-xs text-neutral-600 leading-relaxed font-sans">
+              <p>
+                We accept Visa, Mastercard, American Express, and Apple Pay. Payments are processed securely via 256-bit SSL encryption.
+              </p>
             </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* YOU MAY ALSO LIKE / RECOMMENDATIONS SECTION */}
+      {recommendations.length > 0 && (
+        <section className="py-16 sm:py-24 border-t border-neutral-200 overflow-hidden font-sans">
+          <div className="flex justify-between items-end mb-10">
+            <h2 className="font-serif text-3xl sm:text-4xl text-black font-normal">
+              You May Also Like
+            </h2>
+            <Link
+              href="/shop"
+              className="font-sans text-xs font-semibold uppercase tracking-widest text-black border-b border-black pb-1 hover:opacity-70 transition-opacity"
+            >
+              Discover All
+            </Link>
+          </div>
+
+          <div className="flex gap-6 overflow-x-auto scrollbar-none pb-6">
+            {recommendations.map((prod) => (
+              <div key={prod.id} className="min-w-[280px] sm:min-w-[320px] max-w-[320px] group cursor-pointer shrink-0">
+                <div className="aspect-[4/5] bg-[#eeeeee] mb-4 overflow-hidden relative">
+                  <Link href={`/products/${prod.handle}`}>
+                    <img
+                      src={prod.images[0]?.url || ''}
+                      alt={prod.title}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                  </Link>
+                </div>
+                <p className="font-sans text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-1">
+                  {prod.vendor || 'LUXORA ATELIER'}
+                </p>
+                <h3 className="font-sans text-sm font-medium text-black line-clamp-1 group-hover:underline underline-offset-4">
+                  {prod.title}
+                </h3>
+                <p className="font-sans text-sm font-semibold text-black mt-1">
+                  ${prod.price.amount.toLocaleString()}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+    </main>
   );
 };

@@ -1,28 +1,32 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FilterState } from '@/types';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { X, SlidersHorizontal, RotateCcw } from 'lucide-react';
 
 export interface FilterDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  onApply: (filters: Partial<FilterState>) => void;
-  currentFilters?: FilterState;
+  updateQueryParams: (params: Record<string, string | string[] | null>) => void;
 }
 
 export const FilterDrawer: React.FC<FilterDrawerProps> = ({
   isOpen,
   onClose,
-  onApply,
-  currentFilters,
+  updateQueryParams,
 }) => {
-  const [minPrice, setMinPrice] = useState<number>(currentFilters?.minPrice || 0);
-  const [maxPrice, setMaxPrice] = useState<number>(currentFilters?.maxPrice || 2000);
-  const [selectedColors, setSelectedColors] = useState<string[]>(currentFilters?.colors || []);
-  const [selectedSizes, setSelectedSizes] = useState<string[]>(currentFilters?.sizes || []);
-  const [inStockOnly, setInStockOnly] = useState<boolean>(currentFilters?.inStockOnly || false);
+  const searchParams = useSearchParams();
+
+  const maxPriceParam = searchParams.get('maxPrice');
+  const inStockParam = searchParams.get('inStock') === 'true';
+  const initialColors = searchParams.getAll('color');
+  const initialSizes = searchParams.getAll('size');
+
+  const [maxPrice, setMaxPrice] = useState<number>(maxPriceParam ? Number(maxPriceParam) : 3000);
+  const [selectedColors, setSelectedColors] = useState<string[]>(initialColors);
+  const [selectedSizes, setSelectedSizes] = useState<string[]>(initialSizes);
+  const [inStockOnly, setInStockOnly] = useState<boolean>(inStockParam);
 
   if (!isOpen) return null;
 
@@ -42,27 +46,32 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
   };
 
   const handleReset = () => {
-    setMinPrice(0);
-    setMaxPrice(2000);
+    setMaxPrice(3000);
     setSelectedColors([]);
     setSelectedSizes([]);
     setInStockOnly(false);
+    updateQueryParams({
+      maxPrice: null,
+      color: [],
+      size: [],
+      inStock: null,
+    });
+    onClose();
   };
 
   const handleApply = () => {
-    onApply({
-      minPrice,
-      maxPrice,
-      colors: selectedColors,
-      sizes: selectedSizes,
-      inStockOnly,
+    updateQueryParams({
+      maxPrice: maxPrice === 3000 ? null : String(maxPrice),
+      color: selectedColors,
+      size: selectedSizes,
+      inStock: inStockOnly ? 'true' : null,
     });
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true" aria-label="Catalog Filters">
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity" onClick={onClose} />
+    <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true" aria-label="Mobile Catalog Filters">
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={onClose} />
 
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
         <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col justify-between">
@@ -78,7 +87,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
               type="button"
               onClick={onClose}
               className="p-2 text-neutral-400 hover:text-black rounded-full transition-colors"
-              aria-label="Close filters drawer"
+              aria-label="Close mobile filters drawer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -89,12 +98,12 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
             {/* Price Range Slider */}
             <div className="flex flex-col gap-3">
               <span className="text-xs font-bold uppercase tracking-wider text-neutral-900">
-                Price Range (${minPrice} - ${maxPrice} USD)
+                Price Ceiling (${maxPrice} USD)
               </span>
               <div className="flex items-center gap-4">
                 <input
                   type="range"
-                  min="0"
+                  min="100"
                   max="3000"
                   step="50"
                   value={maxPrice}
@@ -170,8 +179,8 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
             </div>
           </div>
 
-          {/* Footer CTAs */}
-          <div className="p-6 border-t border-neutral-100 bg-neutral-50/50 flex gap-3">
+          {/* Sticky Footer CTAs */}
+          <div className="p-6 border-t border-neutral-100 bg-neutral-50/50 flex gap-3 sticky bottom-0 z-10">
             <Button
               variant="outline"
               size="md"

@@ -2,6 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
+import { monitoring } from '@/lib/services/monitoring';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 export default function GlobalError({
@@ -12,7 +13,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error('Unhandled LUXE Application Error:', error);
+    monitoring.captureException(error, { extra: { digest: error.digest } });
   }, [error]);
 
   return (

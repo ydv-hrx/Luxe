@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { commerceService } from '@/lib/services/commerce';
 import { ShopCatalogClient } from '@/features/catalog/ShopCatalogClient';
 import { CollectionHero } from '@/features/catalog/CollectionHero';
+import { LuxeAtelierClubSection } from '@/features/catalog/LuxeAtelierClubSection';
 
 interface CollectionPageProps {
   params: Promise<{ handle: string }>;
@@ -16,12 +17,12 @@ export async function generateMetadata({ params }: CollectionPageProps): Promise
 
   if (!collection) {
     return {
-      title: 'Collection Not Found | LUXE Atelier',
+      title: 'Collection Not Found | Luxora',
     };
   }
 
   return {
-    title: `${collection.title} Collection | LUXE Atelier`,
+    title: `${collection.title} Collection | Luxora`,
     description: collection.description,
   };
 }
@@ -44,7 +45,7 @@ export default async function CollectionDetailPage({ params, searchParams }: Col
 
   const initialProducts = await commerceService.getProducts({
     category: categoryFilter,
-    sortBy: sortBy as any,
+    sortBy: sortBy as 'featured' | 'price-asc' | 'price-desc' | 'newest' | 'best-selling',
     minPrice,
     maxPrice,
     colors: [],
@@ -53,19 +54,24 @@ export default async function CollectionDetailPage({ params, searchParams }: Col
   });
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 sm:px-8 py-10 flex flex-col gap-12">
-      {/* Luxury Editorial Collection Hero Banner */}
-      <CollectionHero
-        badge="CURATED CAPSULE"
-        title={collection.title}
-        subtitle={collection.description || 'Discover meticulously crafted cashmere, refined outerwear, and timeless essentials designed for modern living.'}
-        bgImageUrl={collection.image?.url}
-      />
+    <div className="flex flex-col gap-12 pt-6">
+      {/* 1. Collection Hero (LOCKED - UNTOUCHED) */}
+      <div className="max-w-[1440px] mx-auto px-6 sm:px-8 w-full">
+        <CollectionHero
+          badge="CURATED CAPSULE"
+          title={collection.title}
+          subtitle={collection.description || 'Discover meticulously crafted cashmere, refined outerwear, and timeless essentials designed for modern living.'}
+          bgImageUrl={collection.image?.url}
+        />
+      </div>
 
-      {/* Catalog Controller with Filter Sidebar & Product Grid */}
-      <Suspense fallback={<div className="h-96 bg-neutral-100 rounded-3xl animate-pulse" />}>
+      {/* 2. Stitch Collection Catalog (Toolbar, Sticky Filter Sidebar, 4:5 Grid, Promo Banner, Pagination, Recently Viewed) */}
+      <Suspense fallback={<div className="h-96 bg-neutral-100 rounded-3xl animate-pulse max-w-[1440px] mx-auto w-full" />}>
         <ShopCatalogClient initialProducts={initialProducts} />
       </Suspense>
+
+      {/* 3. Newsletter Section */}
+      <LuxeAtelierClubSection />
     </div>
   );
 }

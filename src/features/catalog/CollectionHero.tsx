@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
-import { Sparkles, Truck, RotateCcw, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export interface CollectionHeroProps {
   badge?: string;
@@ -13,19 +14,17 @@ export interface CollectionHeroProps {
   autoPlayInterval?: number; // default 7000ms
 }
 
-const DEFAULT_HERO_IMAGES = [
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuCwRhiYFNZTPXII_OODpbDCk2uNIBTfhFZPlms2MbPF5Bfey96Vz3Me2ucyglXAayKEcU945IXcU_dmdKVSMW5dfVqisJSST8nR62RxD1zeXEwvdM0R79z9o5_RnCjRCs8LAparRBn6Pxr6pwaE8Sp3561pscGdpS_BXwr3WQlG89vGKQvHGn5YUcgfF_cZK6pxJnaxYWQBByf8N_3tdx4oj8t_6Ve8UCWMyJaGdyNICM8_M0UL6LznTWBVo0qEeb5wGKMMHpvvQA',
-  'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=2400&q=80',
-  'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&w=2400&q=80',
-  'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=2400&q=80',
-  'https://images.unsplash.com/photo-1608256246200-53e635b5b65f?auto=format&fit=crop&w=2400&q=80',
-  'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?auto=format&fit=crop&w=2400&q=80',
+const STITCH_HERO_IMAGES = [
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuD_Fffw6tZfV95NmBJlldND0byucGSLQ9NYfV8CQUWWtRYdJx6MOC91V0c8sd97ycYd3JtQ2-HIbDfcvNUBTZOiDJS84jYrk3y5CYDQyX_KJ2T13EWxerkbP-bNXkH_6Tn_b2vs0bzMrLNjRy4wL0wvGzl31vr2miq5zHH9mLNDS6dmGJywN1RdpB1kYXYD25OuD6NwsoxlxhHetOvztHCO14QeNzsQOR2_ju1PzSM8d9J9eV-Fe4By6iB7M9SINPoBHZhO3o-H-geN',
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuD1INMYS3AXqabh-W0Kj9VLPdYtEI-qvHihFteQy7nrl23RW1VR97Mo4bkB2L-8saz8sodFhZV7uRwdAlMf8jmA49haevlaJqZqNr0QDT_QT7Njxq1ZXUt1rpD6SHLbhl3212rjhSVmvKLE-N-gd_v2HPVNPU4BH-0pCcArhpv0sFYiiSYeWljXFfaOKXjQDiWzpQ6He5MHvA_UCbGdZdc_LTgZPV_1Df4QqGYYUTy7PkEMTOwq4BgF5sykQEYcRqGRVdt3d9o10iVp',
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuAv7Upm_69PWBF1VQLMUW0UtXIfUTqpUeoHmAn-pagrUFvXLKWaSCFnSZLbJUleWRQ8Ii8w3oRYzeMJntPNmeaEo4sX-aJ-VgPyWxiy0Bc9bArFUJiScnuixIHgsGZOQb1yptwj_GSe6aB-nps987r8yWD9Z2AjpzmdWW4vcdjq1l6T9_Hmtv_IIlWJ0lnz96dyPhgIix5F6Ua10758np5vWMYCkH4cqijmjPATyNBVgPr1UwcH6OIAcgrdFnRgxp3e0zv0PM0MniN5',
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuBsCATyvtVGWdodMWeH-I0pMcxGxf_Y8EqaATekOGFfjzF186kGB8zExTAoBAN-VVqoQteSfGkpyhQiochzm5YZmkUW8ptUpdh6R0q9_nep-XKZTdX4B6r9WFery1zn72HZsr2bJhlONYX8BpMFtEui5KZau2lWRVgJdUQ3ch7oGy4_M2Bn14RYWryzT_BJ-Xy9Em95Vtw7g7SYWzzQLXFFJ0mStQ8H8mHBQxdDVgM4VU2qyR40ijDdqJ-k-y2wHV0ndB5u9Qf3xUyu',
 ];
 
 export const CollectionHero: React.FC<CollectionHeroProps> = ({
-  badge = 'Curated Collection',
-  title = 'The Signature Collection',
-  subtitle = 'Discover meticulously crafted cashmere, refined outerwear, and timeless essentials designed for modern living.',
+  badge = 'Handcrafted in Italy',
+  title,
+  subtitle,
   bgImageUrl,
   heroImages,
   autoPlayInterval = 7000,
@@ -34,33 +33,39 @@ export const CollectionHero: React.FC<CollectionHeroProps> = ({
     heroImages && heroImages.length > 0
       ? heroImages
       : bgImageUrl
-      ? [bgImageUrl, ...DEFAULT_HERO_IMAGES.slice(1)]
-      : DEFAULT_HERO_IMAGES;
+      ? [bgImageUrl, ...STITCH_HERO_IMAGES.slice(1)]
+      : STITCH_HERO_IMAGES;
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const touchStartX = useRef<number | null>(null);
 
-  // Auto-play timer (7s)
+  const handleNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % images.length);
+  }, [images.length]);
+
+  const handlePrev = useCallback(() => {
+    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  }, [images.length]);
+
   useEffect(() => {
     if (isPaused || images.length <= 1) return;
 
     const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % images.length);
+      handleNext();
     }, autoPlayInterval);
 
     return () => clearInterval(timer);
-  }, [isPaused, images.length, autoPlayInterval]);
+  }, [isPaused, images.length, autoPlayInterval, handleNext]);
 
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % images.length);
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowRight') {
+      handleNext();
+    } else if (e.key === 'ArrowLeft') {
+      handlePrev();
+    }
   };
 
-  const handlePrev = () => {
-    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-  };
-
-  // Touch Swipe Handlers for Mobile
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
   };
@@ -79,117 +84,118 @@ export const CollectionHero: React.FC<CollectionHeroProps> = ({
   };
 
   return (
-    <div
-      className="relative h-[580px] w-full rounded-[32px] overflow-hidden flex flex-col items-center justify-between text-center px-6 shadow-lumina-level2 group animate-in fade-in duration-500 bg-neutral-900 select-none"
+    <section
+      tabIndex={0}
+      aria-label="Editorial Collection Carousel"
+      onKeyDown={handleKeyDown}
+      className="relative min-h-[380px] sm:min-h-[480px] md:h-[540px] lg:h-[600px] w-full rounded-2xl sm:rounded-[32px] overflow-hidden flex items-center justify-start text-left px-5 sm:px-12 lg:px-20 shadow-md group animate-in fade-in duration-500 bg-neutral-900 select-none focus:outline-none focus:ring-2 focus:ring-white/50 font-sans"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Editorial Background Cross-Fade Image Carousel */}
+      {/* Image Carousel */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         {images.map((imgUrl, idx) => {
           const isActive = idx === currentIndex;
           return (
             <div
               key={imgUrl + idx}
+              aria-hidden={!isActive}
               className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
               }`}
             >
               <Image
                 src={imgUrl}
-                alt={`${title} slide ${idx + 1}`}
+                alt={`LUXE Editorial Campaign slide ${idx + 1}`}
                 fill
                 priority={idx === 0}
                 sizes="(max-width: 1600px) 100vw, 1600px"
                 className={`object-cover object-center transition-transform duration-[7000ms] ease-out ${
-                  isActive ? 'scale-110' : 'scale-100'
+                  isActive ? 'scale-105' : 'scale-100'
                 }`}
               />
-              <div className="absolute inset-0 bg-black/30" />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/20" />
             </div>
           );
         })}
       </div>
 
-      {/* Top Spacer for Balance */}
-      <div className="relative z-20 w-full pt-8" />
-
-      {/* Hero Central Fixed Typography Content */}
-      <div className="relative z-20 space-y-6 max-w-3xl text-white px-4">
-        <span className="inline-block px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white font-sans text-xs uppercase tracking-[0.3em] font-medium shadow-sm">
+      {/* Editorial Content */}
+      <div className="relative z-20 max-w-2xl space-y-4 sm:space-y-6 text-white py-8 sm:py-12">
+        <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.3em] text-white/90 block">
           {badge}
         </span>
-        <h1 className="font-serif text-[48px] sm:text-[64px] lg:text-[80px] leading-[1.1] text-white tracking-tight font-normal drop-shadow-sm">
-          {title}
+
+        <h1 className="font-serif text-3xl sm:text-6xl lg:text-[72px] leading-tight tracking-tight text-white font-normal">
+          {title || 'Autumn / Winter Collection'}
         </h1>
-        <p className="text-white/90 text-base sm:text-lg max-w-[650px] mx-auto font-light leading-relaxed">
-          {subtitle}
+
+        <p className="text-white/80 text-xs sm:text-base lg:text-lg font-light leading-relaxed max-w-xl">
+          {subtitle || 'Discover timeless outerwear, luxurious knitwear, and contemporary essentials crafted for modern living.'}
+        </p>
+
+        <div className="flex items-center gap-6 pt-2 sm:pt-4 w-full">
+          <Link
+            href="#catalog"
+            className="bg-white text-black hover:bg-neutral-200 transition-colors duration-300 px-8 sm:px-10 py-3.5 sm:py-4 text-xs font-semibold uppercase tracking-[0.25em] shadow-md inline-block w-full sm:w-auto text-center"
+          >
+            Explore Collection
+          </Link>
+          <div className="hidden md:block w-24 h-[1px] bg-white/70" />
+        </div>
+      </div>
+
+      {/* Right-Side Vertical Heritage Stamp */}
+      <div className="absolute bottom-12 right-12 hidden lg:block z-20">
+        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/70 [writing-mode:vertical-rl] rotate-180 font-mono">
+          EST. 1924 — MILAN
         </p>
       </div>
 
-      {/* Carousel Navigation Controls (Prev / Next & Pagination Dots) */}
-      <div className="relative z-20 w-full pb-8 sm:pb-10 flex flex-col items-center gap-6">
-        {/* Pagination Dots */}
-        <div className="flex items-center gap-2">
-          {images.map((_, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => setCurrentIndex(idx)}
-              className={`h-1.5 rounded-full transition-all duration-500 ${
-                idx === currentIndex ? 'w-8 bg-white' : 'w-2 bg-white/40 hover:bg-white/70'
-              }`}
-              aria-label={`Go to slide ${idx + 1}`}
-            />
-          ))}
-        </div>
-
-        {/* Desktop Carousel Arrows */}
+      {/* Slide Indicators */}
+      <div className="absolute bottom-4 sm:bottom-6 left-5 sm:left-12 z-20 flex items-center gap-4">
         {images.length > 1 && (
-          <div className="absolute inset-x-8 top-1/2 -translate-y-1/2 hidden lg:flex justify-between pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <button
-              type="button"
-              onClick={handlePrev}
-              className="p-3 rounded-full bg-white/20 text-white backdrop-blur-md border border-white/30 shadow-lg pointer-events-auto hover:bg-white hover:text-black transition-colors"
-              aria-label="Previous slide"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button
-              type="button"
-              onClick={handleNext}
-              className="p-3 rounded-full bg-white/20 text-white backdrop-blur-md border border-white/30 shadow-lg pointer-events-auto hover:bg-white hover:text-black transition-colors"
-              aria-label="Next slide"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
+          <div className="flex items-center gap-2" role="tablist" aria-label="Slide indicators">
+            {images.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                role="tab"
+                aria-selected={idx === currentIndex}
+                onClick={() => setCurrentIndex(idx)}
+                className={`h-1 sm:h-1.5 rounded-full transition-all duration-500 focus:outline-none ${
+                  idx === currentIndex ? 'w-6 sm:w-8 bg-white' : 'w-2 bg-white/40 hover:bg-white/70'
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
           </div>
         )}
-
-        {/* Trust Indicator Row */}
-        <div className="w-full px-8 sm:px-12 hidden md:block">
-          <div className="flex justify-between items-center text-white/80 text-[10px] tracking-[0.2em] uppercase font-semibold border-t border-white/15 pt-6">
-            <div className="flex items-center gap-3">
-              <Sparkles className="w-4 h-4 text-white" />
-              <span>Premium Materials</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Truck className="w-4 h-4 text-white" />
-              <span>White-Glove Delivery</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <RotateCcw className="w-4 h-4 text-white" />
-              <span>30-Day Returns</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <ShieldCheck className="w-4 h-4 text-white" />
-              <span>RFID Authenticity</span>
-            </div>
-          </div>
-        </div>
       </div>
-    </div>
+
+      {/* Prev/Next Overlay Buttons */}
+      {images.length > 1 && (
+        <div className="absolute inset-y-0 right-6 my-auto hidden md:flex flex-col justify-center gap-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <button
+            type="button"
+            onClick={handlePrev}
+            className="p-2.5 rounded-full bg-black/40 text-white backdrop-blur-md border border-white/20 hover:bg-white hover:text-black transition-colors"
+            aria-label="Previous slide"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={handleNext}
+            className="p-2.5 rounded-full bg-black/40 text-white backdrop-blur-md border border-white/20 hover:bg-white hover:text-black transition-colors"
+            aria-label="Next slide"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+    </section>
   );
 };

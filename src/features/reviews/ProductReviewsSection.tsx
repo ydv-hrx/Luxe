@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ProductReview, ReviewSummary } from '@/types';
 import { reviewService } from '@/lib/services/review';
 import { ReviewCard } from './ReviewCard';
@@ -20,7 +20,7 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
   const [summary, setSummary] = useState<ReviewSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [sortOption, setSortOption] = useState<'newest' | 'oldest' | 'highest' | 'lowest'>('newest');
+  const [sortOption, setSortOption] = useState<'newest' | 'oldest' | 'highest' | 'lowest' | 'most-helpful'>('newest');
   const [withImagesOnly, setWithImagesOnly] = useState(false);
 
   // Form State
@@ -32,25 +32,26 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  const fetchReviewsData = async () => {
+  const fetchReviewsData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [revs, summ] = await Promise.all([
-        reviewService.getReviews(productId, sortOption, withImagesOnly),
-        reviewService.getReviewSummary(productId),
-      ]);
-      setReviews(revs);
-      setSummary(summ);
-    } catch (err) {
-      console.error('Failed to load product reviews:', err);
+      const summary = await reviewService.getReviewSummary(productId);
+      const list = await reviewService.getReviews(productId, sortOption, withImagesOnly);
+      setSummary(summary);
+      setReviews(list);
+    } catch (_err) {
+      // Ignore fetch error
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [productId, sortOption, withImagesOnly]);
 
   useEffect(() => {
-    fetchReviewsData();
-  }, [productId, sortOption, withImagesOnly]);
+    const timer = setTimeout(() => {
+      fetchReviewsData();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [fetchReviewsData]);
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -256,7 +257,7 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
 
           <select
             value={sortOption}
-            onChange={(e) => setSortOption(e.target.value as any)}
+            onChange={(e) => setSortOption(e.target.value as 'newest' | 'oldest' | 'highest' | 'lowest' | 'most-helpful')}
             className="p-2 bg-neutral-50 border border-neutral-200 rounded-xl text-xs font-semibold text-neutral-800 focus:outline-none"
           >
             <option value="newest">Most Recent</option>

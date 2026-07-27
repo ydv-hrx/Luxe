@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { conciergeService, ConciergeMessage } from '@/lib/services/concierge';
-import { GlassInput } from '@/components/ui/GlassInput';
 import { Button } from '@/components/ui/Button';
-import { MessageSquare, X, Send, Sparkles, User, Headset } from 'lucide-react';
+import { X, Send, Sparkles, Headset } from 'lucide-react';
 
 export const ConciergeWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);

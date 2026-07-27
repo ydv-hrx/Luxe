@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useCartStore } from '@/store/useCartStore';
 import { useWishlistStore } from '@/store/useWishlistStore';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
 import {
   X,
   Trash2,
@@ -27,7 +26,7 @@ export const CartDrawer: React.FC = () => {
   const { isOpen, closeCart, items, updateQuantity, removeItem, getSubtotal, clearCart } = useCartStore();
   const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const [movedToWishlist, setMovedToWishlist] = useState<Record<string, boolean>>({});
+  const [_movedToWishlist, setMovedToWishlist] = useState<Record<string, boolean>>({});
 
   if (!isOpen) return null;
 

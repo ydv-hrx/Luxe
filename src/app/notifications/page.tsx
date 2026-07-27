@@ -2,8 +2,7 @@ import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notificationService } from '@/lib/services/notification';
-import { Badge } from '@/components/ui/Badge';
-import { Bell, ShieldCheck, ExternalLink, CheckCircle } from 'lucide-react';
+import { Bell, ExternalLink } from 'lucide-react';
 
 import { PageHeader } from '@/components/ui/PageHeader';
 

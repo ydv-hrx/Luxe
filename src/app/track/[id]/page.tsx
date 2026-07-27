@@ -1,8 +1,8 @@
 import React from 'react';
 import { Metadata } from 'next';
-import Link from 'next/link';
+
 import { Badge } from '@/components/ui/Badge';
-import { Truck, CheckCircle2, Clock, MapPin, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Truck } from 'lucide-react';
 
 interface TrackPageProps {
   params: Promise<{ id: string }>;

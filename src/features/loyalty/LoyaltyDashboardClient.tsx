@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { LoyaltyProfile, RewardPass, loyaltyService } from '@/lib/services/loyalty';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { Gem, Gift, Sparkles, Check, Lock } from 'lucide-react';
+import { Gem, Gift, Check } from 'lucide-react';
 
 export interface LoyaltyDashboardClientProps {
   profile: LoyaltyProfile;

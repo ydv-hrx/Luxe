@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { GiftCustomization } from '@/lib/services/gifting';
 import { Button } from '@/components/ui/Button';
-import { Gift, Sparkles, Heart, CheckCircle2 } from 'lucide-react';
+import { Gift, Sparkles, CheckCircle2 } from 'lucide-react';
 
 export interface DigitalUnboxingProps {
   gift: GiftCustomization;

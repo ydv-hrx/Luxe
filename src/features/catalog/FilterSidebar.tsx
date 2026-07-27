@@ -1,30 +1,35 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FilterState } from '@/types';
-import { Button } from '@/components/ui/Button';
+import { useSearchParams } from 'next/navigation';
 import { SlidersHorizontal, RotateCcw, ChevronDown, Check } from 'lucide-react';
 
 export interface FilterSidebarProps {
-  onApply: (filters: Partial<FilterState>) => void;
-  currentFilters?: FilterState;
+  updateQueryParams: (params: Record<string, string | string[] | null>) => void;
   className?: string;
 }
 
 export const FilterSidebar: React.FC<FilterSidebarProps> = ({
-  onApply,
-  currentFilters,
+  updateQueryParams,
   className = '',
 }) => {
-  const [maxPrice, setMaxPrice] = useState<number>(currentFilters?.maxPrice || 3000);
-  const [selectedColors, setSelectedColors] = useState<string[]>(currentFilters?.colors || []);
-  const [selectedSizes, setSelectedSizes] = useState<string[]>(currentFilters?.sizes || []);
-  const [inStockOnly, setInStockOnly] = useState<boolean>(currentFilters?.inStockOnly || false);
+  const searchParams = useSearchParams();
+
+  const maxPriceParam = searchParams.get('maxPrice');
+  const inStockParam = searchParams.get('inStock') === 'true';
+  const selectedColors = searchParams.getAll('color');
+  const selectedSizes = searchParams.getAll('size');
+  const selectedVendors = searchParams.getAll('vendor');
+  const selectedMaterials = searchParams.getAll('material');
+
+  const maxPrice = maxPriceParam ? Number(maxPriceParam) : 3000;
 
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     price: true,
     color: true,
     size: true,
+    vendor: true,
+    material: true,
     availability: true,
   });
 
@@ -34,29 +39,47 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
 
   const colorOptions = ['Onyx Black', 'Oatmeal', 'Slate Gray', 'Camel', 'Midnight Navy', 'Emerald Green'];
   const sizeOptions = ['XS', 'S', 'M', 'L', 'XL'];
+  const vendorOptions = ['LUXE Atelier', 'Mongolian Cashmere', 'Tuscan Leather', 'Savoie Tailoring'];
+  const _materialOptions = ['Cashmere', 'Virgin Wool', 'Silk', 'Calfskin Leather', 'Linen'];
 
   const toggleColor = (col: string) => {
     const updated = selectedColors.includes(col)
       ? selectedColors.filter((c) => c !== col)
       : [...selectedColors, col];
-    setSelectedColors(updated);
-    onApply({ maxPrice, colors: updated, sizes: selectedSizes, inStockOnly });
+    updateQueryParams({ color: updated });
   };
 
   const toggleSize = (sz: string) => {
     const updated = selectedSizes.includes(sz)
       ? selectedSizes.filter((s) => s !== sz)
       : [...selectedSizes, sz];
-    setSelectedSizes(updated);
-    onApply({ maxPrice, colors: selectedColors, sizes: updated, inStockOnly });
+    updateQueryParams({ size: updated });
+  };
+
+  const toggleVendor = (v: string) => {
+    const updated = selectedVendors.includes(v)
+      ? selectedVendors.filter((item) => item !== v)
+      : [...selectedVendors, v];
+    updateQueryParams({ vendor: updated });
+  };
+
+  const _toggleMaterial = (m: string) => {
+    const updated = selectedMaterials.includes(m)
+      ? selectedMaterials.filter((item) => item !== m)
+      : [...selectedMaterials, m];
+    updateQueryParams({ material: updated });
   };
 
   const handleReset = () => {
-    setMaxPrice(3000);
-    setSelectedColors([]);
-    setSelectedSizes([]);
-    setInStockOnly(false);
-    onApply({ maxPrice: 3000, colors: [], sizes: [], inStockOnly: false });
+    updateQueryParams({
+      maxPrice: null,
+      minPrice: null,
+      color: [],
+      size: [],
+      vendor: [],
+      material: [],
+      inStock: null,
+    });
   };
 
   return (
@@ -85,6 +108,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
           type="button"
           onClick={() => toggleSection('price')}
           className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-neutral-900 w-full text-left"
+          aria-expanded={openSections.price}
         >
           <span>Price Ceiling (${maxPrice} USD)</span>
           <ChevronDown className={`w-4 h-4 transition-transform ${openSections.price ? 'rotate-180' : ''}`} />
@@ -93,19 +117,19 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
           <div className="pt-2">
             <input
               type="range"
-              min="0"
+              min="100"
               max="3000"
               step="50"
               value={maxPrice}
               onChange={(e) => {
                 const val = Number(e.target.value);
-                setMaxPrice(val);
-                onApply({ maxPrice: val, colors: selectedColors, sizes: selectedSizes, inStockOnly });
+                updateQueryParams({ maxPrice: val === 3000 ? null : String(val) });
               }}
               className="w-full accent-black cursor-pointer"
+              aria-label="Filter price ceiling"
             />
             <div className="flex justify-between text-[11px] text-neutral-400 font-semibold mt-1">
-              <span>$0 USD</span>
+              <span>$100 USD</span>
               <span>$3,000 USD</span>
             </div>
           </div>
@@ -118,6 +142,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
           type="button"
           onClick={() => toggleSection('color')}
           className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-neutral-900 w-full text-left"
+          aria-expanded={openSections.color}
         >
           <span>Color Palette</span>
           <ChevronDown className={`w-4 h-4 transition-transform ${openSections.color ? 'rotate-180' : ''}`} />
@@ -136,6 +161,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                       ? 'bg-black text-white border-black shadow-sm'
                       : 'bg-neutral-50/80 text-neutral-700 border-neutral-200 hover:border-neutral-400'
                   }`}
+                  aria-pressed={isSelected}
                 >
                   {isSelected && <Check className="w-3 h-3 text-white" />}
                   {col}
@@ -146,12 +172,13 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
         )}
       </div>
 
-      {/* Size Options Accordion */}
+      {/* Garment Size Accordion */}
       <div className="flex flex-col gap-3 pb-4 border-b border-neutral-100">
         <button
           type="button"
           onClick={() => toggleSection('size')}
           className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-neutral-900 w-full text-left"
+          aria-expanded={openSections.size}
         >
           <span>Garment Size</span>
           <ChevronDown className={`w-4 h-4 transition-transform ${openSections.size ? 'rotate-180' : ''}`} />
@@ -170,8 +197,43 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                       ? 'bg-black text-white border-black shadow-sm'
                       : 'bg-neutral-50/80 text-neutral-700 border-neutral-200 hover:border-neutral-400'
                   }`}
+                  aria-pressed={isSelected}
                 >
                   {sz}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Vendor Brand Accordion */}
+      <div className="flex flex-col gap-3 pb-4 border-b border-neutral-100">
+        <button
+          type="button"
+          onClick={() => toggleSection('vendor')}
+          className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-neutral-900 w-full text-left"
+          aria-expanded={openSections.vendor}
+        >
+          <span>Atelier Vendor</span>
+          <ChevronDown className={`w-4 h-4 transition-transform ${openSections.vendor ? 'rotate-180' : ''}`} />
+        </button>
+        {openSections.vendor && (
+          <div className="flex flex-col gap-2 pt-1">
+            {vendorOptions.map((v) => {
+              const isSelected = selectedVendors.includes(v);
+              return (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => toggleVendor(v)}
+                  className={`text-left text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors flex items-center justify-between ${
+                    isSelected ? 'bg-black text-white font-bold' : 'text-neutral-700 hover:bg-neutral-100'
+                  }`}
+                  aria-pressed={isSelected}
+                >
+                  <span>{v}</span>
+                  {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
                 </button>
               );
             })}
@@ -186,13 +248,12 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
         </span>
         <input
           type="checkbox"
-          checked={inStockOnly}
+          checked={inStockParam}
           onChange={(e) => {
-            const checked = e.target.checked;
-            setInStockOnly(checked);
-            onApply({ maxPrice, colors: selectedColors, sizes: selectedSizes, inStockOnly: checked });
+            updateQueryParams({ inStock: e.target.checked ? 'true' : null });
           }}
           className="w-4 h-4 accent-black rounded cursor-pointer"
+          aria-label="Filter in stock products only"
         />
       </div>
     </div>

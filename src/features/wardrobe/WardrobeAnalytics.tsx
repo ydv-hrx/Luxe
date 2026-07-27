@@ -1,12 +1,10 @@
 import React from 'react';
 import Image from 'next/image';
 import { wardrobeService } from '@/lib/services/wardrobe';
-import { Badge } from '@/components/ui/Badge';
-import { Layers, ShieldCheck, Sparkles, TrendingUp } from 'lucide-react';
 
 export const WardrobeAnalytics: React.FC = async () => {
   const items = await wardrobeService.getWardrobeItems();
-  const timeline = await wardrobeService.getWardrobeTimeline();
+  const _timeline = await wardrobeService.getWardrobeTimeline();
 
   const totalValue = items.reduce((acc, i) => acc + i.product.price.amount, 0);
   const totalWears = items.reduce((acc, i) => acc + i.wearCount, 0);

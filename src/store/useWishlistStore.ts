@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Product } from '@/types';
+import { analytics } from '@/lib/services/analytics';
 
 const STORAGE_KEY = 'luxe_wishlist_items';
 
@@ -46,6 +47,7 @@ export const useWishlistStore = create<WishlistState>((set, get) => ({
     } else {
       updated = [...current, product];
       message = `Added "${product.title}" to your wishlist.`;
+      analytics.addToWishlist(product);
     }
 
     if (typeof window !== 'undefined') {

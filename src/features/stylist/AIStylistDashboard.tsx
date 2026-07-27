@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
+
 import { StyleDNAProfile } from '@/lib/services/recommendation';
 import { Product } from '@/types';
 import { ProductCard } from '@/components/ui/ProductCard';
-import { Button } from '@/components/ui/Button';
-import { Sparkles, Sliders, Palette, Zap, Layers } from 'lucide-react';
+import { Sliders, Palette, Zap } from 'lucide-react';
 
 export interface AIStylistDashboardProps {
   dna: StyleDNAProfile;

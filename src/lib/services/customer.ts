@@ -26,6 +26,7 @@ export interface ICustomerService {
   getProfile(): Promise<CustomerProfile>;
   updateProfile(data: Partial<CustomerProfile>): Promise<CustomerProfile>;
   getOrders(): Promise<CustomerOrderSummary[]>;
+  getOrderDetail(id: string): Promise<any>;
 }
 
 const TOKEN_KEY = 'luxe_shopify_customer_token';
@@ -124,7 +125,7 @@ class ShopifyCustomerService implements ICustomerService {
             }
           : undefined,
       };
-    } catch (err) {
+    } catch (_err) {
       return this.mockFallback.getProfile();
     }
   }
@@ -164,9 +165,13 @@ class ShopifyCustomerService implements ICustomerService {
           thumbnail: thumb,
         };
       });
-    } catch (err) {
+    } catch (_err) {
       return this.mockFallback.getOrders();
     }
+  }
+
+  async getOrderDetail(id: string): Promise<any> {
+    return this.mockFallback.getOrderDetail(id);
   }
 }
 
@@ -224,6 +229,56 @@ class MockCustomerService implements ICustomerService {
 
   async getOrders(): Promise<CustomerOrderSummary[]> {
     return Promise.resolve([...this.orders]);
+  }
+
+  async getOrderDetail(id: string): Promise<any> {
+    return Promise.resolve({
+      orderId: id,
+      orderNumber: id.startsWith('LX-') ? id : `LX-${id}`,
+      date: '2026-07-22',
+      paymentStatus: 'Paid',
+      fulfillmentStatus: 'In Transit',
+      timelineStep: 'in_transit',
+      items: [
+        {
+          id: 'item-1',
+          title: 'Hand-Combed Mongolian Cashmere Coat',
+          variantTitle: 'Midnight Black / Large',
+          price: 1850,
+          quantity: 1,
+          image: 'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&w=600&q=80',
+        },
+        {
+          id: 'item-2',
+          title: 'Silk Satin Evening Trousers',
+          variantTitle: 'Obsidian / 50',
+          price: 280,
+          quantity: 1,
+          image: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80',
+        },
+      ],
+      shippingAddress: {
+        name: 'Julian Vane',
+        street: '740 Park Avenue, Apt 14B',
+        city: 'New York',
+        state: 'NY',
+        zip: '10021',
+        country: 'United States',
+      },
+      billingAddress: {
+        name: 'Julian Vane',
+        street: '740 Park Avenue, Apt 14B',
+        city: 'New York',
+        state: 'NY',
+        zip: '10021',
+        country: 'United States',
+      },
+      subtotal: 2130,
+      shippingCost: 0,
+      discounts: 0,
+      tax: 170.4,
+      total: 2300.4,
+    });
   }
 }
 

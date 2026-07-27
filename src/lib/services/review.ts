@@ -1,7 +1,7 @@
 import { ProductReview, ReviewSummary } from '@/types';
 
 export interface IReviewService {
-  getReviews(productId: string, sort?: 'newest' | 'oldest' | 'highest' | 'lowest', filterWithImages?: boolean): Promise<ProductReview[]>;
+  getReviews(productId: string, sort?: 'newest' | 'oldest' | 'highest' | 'lowest' | 'most-helpful', filterWithImages?: boolean): Promise<ProductReview[]>;
   getReviewSummary(productId: string): Promise<ReviewSummary>;
   voteHelpful(reviewId: string): Promise<{ newCount: number; alreadyVoted: boolean }>;
   submitReview(data: { productId: string; author: string; rating: number; title: string; body: string }): Promise<ProductReview>;
@@ -147,7 +147,7 @@ class MockReviewService implements IReviewService {
       }
     }
 
-    for (const [prodId, list] of this.reviewsStore.entries()) {
+    for (const [_prodId, list] of this.reviewsStore.entries()) {
       const found = list.find((r) => r.id === reviewId);
       if (found) {
         found.helpfulCount += 1;

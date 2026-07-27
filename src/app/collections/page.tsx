@@ -1,34 +1,61 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Metadata } from 'next';
 import { commerceService } from '@/lib/services/commerce';
-import { CollectionCard } from '@/features/catalog/CollectionCard';
-import { Badge } from '@/components/ui/Badge';
-import { Layers } from 'lucide-react';
+import { CategoriesHero } from '@/features/categories/CategoriesHero';
+import { CategoryCarousel } from '@/features/categories/CategoryCarousel';
+import { CategoriesClientContainer } from '@/features/categories/CategoriesClientContainer';
+import { CategoriesFeatureBanner } from '@/features/categories/CategoriesFeatureBanner';
+import { LuxeAtelierClubSection } from '@/features/catalog/LuxeAtelierClubSection';
+import { FilterState } from '@/types';
 
-import { PageHeader } from '@/components/ui/PageHeader';
+export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: 'Curated Collections | LUXE Atelier',
-  description: 'Explore our capsule collections: Grade-A Mongolian Cashmere, Tailored Virgin Wool Outerwear, and Artisan Italian Leather Goods.',
+  title: 'Autumn / Winter 2024 Collection | Luxora Categories',
+  description:
+    'Discover the pinnacle of artisanal tailoring and contemporary silhouettes, where heritage meets the avant-garde.',
 };
 
-export default async function CollectionsIndexPage() {
-  const collections = await commerceService.getCollections();
+interface CollectionsPageProps {
+  searchParams: Promise<{ category?: string; query?: string; sort?: string }>;
+}
+
+export default async function CollectionsIndexPage({ searchParams }: CollectionsPageProps) {
+  const params = await searchParams;
+  const category = params.category || 'all';
+
+  const validSorts: FilterState['sortBy'][] = ['featured', 'price-asc', 'price-desc', 'newest'];
+  const sortBy = validSorts.includes(params.sort as FilterState['sortBy'])
+    ? (params.sort as FilterState['sortBy'])
+    : 'featured';
+
+  const products = await commerceService.getProducts({
+    category: category === 'all' ? undefined : category,
+    query: params.query,
+    sortBy,
+    colors: [],
+    sizes: [],
+    inStockOnly: false,
+  });
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 sm:px-8 py-10 sm:py-12 flex flex-col gap-10">
-      <PageHeader
-        badge="Curated Catalog Capsules"
-        title="Atelier Collections"
-        subtitle="Discover themed luxury capsule edits, meticulously designed with architectural cuts, Grade-A cashmere, and bespoke Italian leather craftsmanship."
-      />
+    <div className="w-full">
+      {/* 1. Editorial Hero */}
+      <CategoriesHero />
 
-      {/* Collections Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {collections.map((col) => (
-          <CollectionCard key={col.id} collection={col} />
-        ))}
-      </div>
+      {/* 2. Shop by Category Carousel */}
+      <CategoryCarousel />
+
+      {/* 3. Sticky Discovery Toolbar, Filter Sidebar, Product Grid, & Pagination */}
+      <Suspense fallback={<div className="h-96 bg-neutral-100 rounded-3xl animate-pulse max-w-[1440px] mx-auto w-full" />}>
+        <CategoriesClientContainer initialProducts={products} currentCategory={category} />
+      </Suspense>
+
+      {/* 4. Editorial Feature Banner */}
+      <CategoriesFeatureBanner />
+
+      {/* 5. Newsletter Section */}
+      <LuxeAtelierClubSection />
     </div>
   );
 }

@@ -6,8 +6,7 @@ import {
   GET_PRODUCT_BY_HANDLE_QUERY,
   GET_COLLECTIONS_QUERY,
   GET_COLLECTION_BY_HANDLE_QUERY,
-  PREDICTIVE_SEARCH_QUERY,
-} from './graphql/queries';
+  } from './graphql/queries';
 
 export interface ICommerceService {
   getProducts(filters?: FilterState): Promise<Product[]>;
@@ -15,6 +14,7 @@ export interface ICommerceService {
   getFeaturedProducts(): Promise<Product[]>;
   getCollections(): Promise<Collection[]>;
   getCollectionByHandle(handle: string): Promise<Collection | null>;
+  getProductRecommendations(productId: string): Promise<Product[]>;
   searchProducts(query: string): Promise<Product[]>;
 }
 
@@ -101,8 +101,8 @@ class ShopifyCommerceService implements ICommerceService {
 
       const products = data.products?.edges?.map((e: any) => transformShopifyProduct(e.node)) || [];
       return products.length > 0 ? products : this.mockFallback.getProducts(filters);
-    } catch (err) {
-      console.warn('Shopify API query failed, falling back to mock dataset:', err);
+    } catch (_err) {
+      console.warn('Shopify API query failed, falling back to mock dataset:', _err);
       return this.mockFallback.getProducts(filters);
     }
   }
@@ -120,7 +120,7 @@ class ShopifyCommerceService implements ICommerceService {
 
       if (!data.product) return this.mockFallback.getProductByHandle(handle);
       return transformShopifyProduct(data.product);
-    } catch (err) {
+    } catch (_err) {
       return this.mockFallback.getProductByHandle(handle);
     }
   }
@@ -153,7 +153,7 @@ class ShopifyCommerceService implements ICommerceService {
         })) || [];
 
       return collections.length > 0 ? collections : this.mockFallback.getCollections();
-    } catch (err) {
+    } catch (_err) {
       return this.mockFallback.getCollections();
     }
   }
@@ -181,9 +181,13 @@ class ShopifyCommerceService implements ICommerceService {
           ? { url: data.collection.image.url, altText: data.collection.image.altText || data.collection.title }
           : { url: 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=1200&q=80', altText: data.collection.title },
       };
-    } catch (err) {
+    } catch (_err) {
       return this.mockFallback.getCollectionByHandle(handle);
     }
+  }
+
+  async getProductRecommendations(productId: string): Promise<Product[]> {
+    return this.mockFallback.getProductRecommendations(productId);
   }
 
   async searchProducts(query: string): Promise<Product[]> {
@@ -248,6 +252,11 @@ class MockCommerceService implements ICommerceService {
   async getCollectionByHandle(handle: string): Promise<Collection | null> {
     const found = MOCK_COLLECTIONS.find((c) => c.handle === handle);
     return Promise.resolve(found || null);
+  }
+
+  async getProductRecommendations(productId: string): Promise<Product[]> {
+    const filtered = MOCK_PRODUCTS.filter((p) => p.id !== productId);
+    return Promise.resolve(filtered.slice(0, 4));
   }
 
   async searchProducts(query: string): Promise<Product[]> {

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { authService } from '@/lib/services/auth';
 import { Button } from '@/components/ui/Button';
-import { ShieldCheck, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export const OtpVerifyForm: React.FC = () => {
   const router = useRouter();
@@ -19,7 +19,7 @@ export const OtpVerifyForm: React.FC = () => {
     try {
       await authService.verifyOtp('julian.vane@luxe.com', code);
       router.push('/account');
-    } catch (err) {
+    } catch (_err) {
       setError('Invalid security code. Try entering 123456.');
       setIsLoading(false);
     }

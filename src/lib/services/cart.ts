@@ -1,11 +1,12 @@
-import { Cart, CartLineItem, Money } from '@/types';
+import { Cart, CartLineItem } from '@/types';
 import { MOCK_PRODUCTS } from './mockData';
 import { shopifyFetch } from './graphql/client';
 
 export interface Address {
+  id?: string;
   firstName: string;
   lastName: string;
-  email: string;
+  email?: string;
   phone?: string;
   address1: string;
   address2?: string;
@@ -13,6 +14,7 @@ export interface Address {
   province: string;
   zip: string;
   country: string;
+  isDefault?: boolean;
 }
 
 export interface CartLineInput {
@@ -22,11 +24,11 @@ export interface CartLineInput {
 
 export interface ICartService {
   createCart(lines?: CartLineInput[]): Promise<Cart>;
-  addLines(cartId: string, lines: CartLineInput[]): Promise<Cart>;
-  updateLines(cartId: string, lines: { id: string; quantity: number }[]): Promise<Cart>;
-  removeLines(cartId: string, lineIds: string[]): Promise<Cart>;
-  getCart(cartId: string): Promise<Cart | null>;
-  checkout(cartId: string, shippingAddress?: Address, paymentMethod?: string): Promise<{ checkoutUrl: string }>;
+  addLines(_cartId: string, lines: CartLineInput[]): Promise<Cart>;
+  updateLines(_cartId: string, lines: { id: string; quantity: number }[]): Promise<Cart>;
+  removeLines(_cartId: string, _lineIds: string[]): Promise<Cart>;
+  getCart(_cartId: string): Promise<Cart | null>;
+  checkout(_cartId: string, shippingAddress?: Address, paymentMethod?: string): Promise<{ checkoutUrl: string }>;
 }
 
 const CART_FRAGMENT = `
@@ -215,7 +217,7 @@ class ShopifyCartService implements ICartService {
       if (!resCart) return this.mockFallback.createCart(lines);
 
       return transformShopifyCart(resCart);
-    } catch (err) {
+    } catch (_err) {
       return this.mockFallback.createCart(lines);
     }
   }
@@ -235,7 +237,7 @@ class ShopifyCartService implements ICartService {
       if (!resCart) return this.mockFallback.addLines(cartId, lines);
 
       return transformShopifyCart(resCart);
-    } catch (err) {
+    } catch (_err) {
       return this.mockFallback.addLines(cartId, lines);
     }
   }
@@ -255,7 +257,7 @@ class ShopifyCartService implements ICartService {
       if (!resCart) return this.mockFallback.updateLines(cartId, lines);
 
       return transformShopifyCart(resCart);
-    } catch (err) {
+    } catch (_err) {
       return this.mockFallback.updateLines(cartId, lines);
     }
   }
@@ -275,7 +277,7 @@ class ShopifyCartService implements ICartService {
       if (!resCart) return this.mockFallback.removeLines(cartId, lineIds);
 
       return transformShopifyCart(resCart);
-    } catch (err) {
+    } catch (_err) {
       return this.mockFallback.removeLines(cartId, lineIds);
     }
   }
@@ -293,7 +295,7 @@ class ShopifyCartService implements ICartService {
 
       if (!data.cart) return this.mockFallback.getCart(cartId);
       return transformShopifyCart(data.cart);
-    } catch (err) {
+    } catch (_err) {
       return this.mockFallback.getCart(cartId);
     }
   }
@@ -343,7 +345,7 @@ class ShopifyCartService implements ICartService {
       }
 
       return this.mockFallback.checkout(cartId, shippingAddress, paymentMethod);
-    } catch (err) {
+    } catch (_err) {
       return this.mockFallback.checkout(cartId, shippingAddress, paymentMethod);
     }
   }
@@ -366,19 +368,19 @@ class MockCartService implements ICartService {
     total: { amount: 734.4, currencyCode: 'USD' },
   };
 
-  async createCart(lines: CartLineInput[] = []): Promise<Cart> {
+  async createCart(_lines: CartLineInput[] = []): Promise<Cart> {
     return Promise.resolve({ ...this.mockCart, id: `cart-${Date.now()}` });
   }
 
-  async addLines(cartId: string, lines: CartLineInput[]): Promise<Cart> {
+  async addLines(_cartId: string, _lines: CartLineInput[]): Promise<Cart> {
     return Promise.resolve({ ...this.mockCart });
   }
 
-  async updateLines(cartId: string, lines: { id: string; quantity: number }[]): Promise<Cart> {
+  async updateLines(_cartId: string, _lines: { id: string; quantity: number }[]): Promise<Cart> {
     return Promise.resolve({ ...this.mockCart });
   }
 
-  async removeLines(cartId: string, lineIds: string[]): Promise<Cart> {
+  async removeLines(_cartId: string, _lineIds: string[]): Promise<Cart> {
     return Promise.resolve({ ...this.mockCart });
   }
 
@@ -386,7 +388,7 @@ class MockCartService implements ICartService {
     return Promise.resolve({ ...this.mockCart, id: cartId || this.mockCart.id });
   }
 
-  async checkout(cartId: string, shippingAddress?: Address, paymentMethod?: string): Promise<{ checkoutUrl: string }> {
+  async checkout(_cartId: string, _shippingAddress?: Address, _paymentMethod?: string): Promise<{ checkoutUrl: string }> {
     const orderId = `LX-${Math.floor(1000 + Math.random() * 9000)}`;
     return Promise.resolve({
       checkoutUrl: `/orders/${orderId}`,

@@ -2,23 +2,23 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+
 import { OrderTimeline, OrderStep } from './OrderTimeline';
 import { useCartStore } from '@/store/useCartStore';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import {
-  CheckCircle2,
+  
   Truck,
   RotateCcw,
   Download,
-  ArrowRight,
+  
   ShieldCheck,
   MapPin,
   HelpCircle,
-  FileText,
+  
   CreditCard,
-  Package,
+  
 } from 'lucide-react';
 
 export interface OrderItem {
